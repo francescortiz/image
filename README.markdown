@@ -49,6 +49,7 @@ These parameters don't make sense when you use the "{% image [field] [parameters
 This is how ImageCenter looks in the admin section when it is editable. **Just click on the the center of attention of the image.**
 
 [[admin_section.png]]
+![Screenshot](https://github.com/francescortiz/image/wiki/admin_section.png)
 
 ## Background features
 

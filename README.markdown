@@ -67,7 +67,7 @@ I developed what I needed. Open an issue if you need any of these fixed or deman
 * help_text kwarg does not work for ImageCenterField
 * I only tested it in python 1.2.5.
 * Thumnails are always saved in PNG format.
-* It does not have yet a mechanism to prevent an attacker from creating arbitrary thumbnails and fill up your server's disk space.
+* **ON WORK: I am going to implement session tokens to solve this**. It does not have yet a mechanism to prevent an attacker from creating arbitrary thumbnails and fill up your server's disk space.
 * I am no python expert, so it has issues with import paths. Just readjust them to your needs in your project.
 * South integration can also suffer from import path issues.
 

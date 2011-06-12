@@ -97,8 +97,8 @@ Sample urls.py:
 Sample template:
 
     {% load image %}
-    {% image test.image 'width=150&height=150' %}
-    {% image test.video 'width=150&height=150' %}
-    {% url path_variable 'width=150&height=150&mode=scale' %}
-    {% url '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&video=true&overlay=img/overlay.png' %}
+    <img src="{% image test.image 'width=150&height=150' %}"/>
+    <img src="{% image test.video 'width=150&height=150' %}"/>
+    <img src="{% url path_variable 'width=150&height=150&mode=scale' %}"/>
+    <img src="{% url '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&video=true&overlay=img/overlay.png' %}"/>
 

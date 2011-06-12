@@ -54,7 +54,7 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 * Thumbnails are automatically removed when database entries are removed.
 * It does not use any templates or resources. Just setup urls.py and done.
 * South integration: custom fields are understood by south.
-* URLs get tokenized to the session, so it prevents from direct image linkage from external sites.
+* URLs get tokenized to the session, so it prevents direct image linkage from external sites.
 
 ## Dependencies
 

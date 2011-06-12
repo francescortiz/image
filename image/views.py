@@ -10,7 +10,13 @@ from image.videothumbs import generate_thumb
 from encodings.base64_codec import base64_decode
 
 @cache_page(60 * 15)
-def image(request, path, parameters):
+def image(request, path, token):
+	
+	if "is_admin=true" in token and request.user.has_perm('admin'):
+		parameters = token
+	else:
+		parameters = request.session.get(token,'')
+		
 	parms = unquote(parameters).split('&')
 	qs = {}
 	

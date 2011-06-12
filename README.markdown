@@ -65,7 +65,7 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 I developed what I needed. Open an issue if you need any of these fixed or demand any other feature.
 
 * help_text kwarg does not work for ImageCenterField
-* I only tested it in python 1.2.5.
+* I only tested it in Django 1.2.5.
 * Thumnails are always saved in PNG format.
 * I am no python expert, so it has issues with import paths. Just readjust them to your needs in your project.
 * South integration can also suffer from import path issues.

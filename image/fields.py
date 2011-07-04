@@ -95,6 +95,7 @@ def post_init_capture(sender, instance, *args, **kwargs):
 post_init.connect(post_init_capture)
 
 
+
 parent_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+"/..")
 reparent_path = os.path.abspath(parent_path+"/..")
 parent_path = parent_path.replace(reparent_path+"/","")
@@ -103,5 +104,13 @@ try:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^"+parent_path+"\.image\.fields\.ImageCenterField$"])
     add_introspection_rules([], ["^"+parent_path+"\.image\.video_field\.VideoField$"])
+except ImportError:
+    pass
+
+
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^image\.fields\.ImageCenterField$"])
+    add_introspection_rules([], ["^image\.video_field\.VideoField$"])
 except ImportError:
     pass

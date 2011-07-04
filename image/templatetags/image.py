@@ -6,9 +6,11 @@ from django.core.urlresolvers import reverse
 from image.video_field import VideoFieldFile
 import random
 from django.db.models.fields.files import ImageFieldFile
+import sha
 
-def image_create_token():
-    return str(random.random())+""+str(random.random())
+def image_create_token(parameters):
+    #return str(random.random())+""+str(random.random())
+    return sha.new(parameters).hexdigest()
 
 def image_tokenize(session, parameters):
     token = None
@@ -17,7 +19,7 @@ def image_tokenize(session, parameters):
             token = k
             break
     if token is None:
-        token = "image_token_"+image_create_token()
+        token = "image_token_"+image_create_token(parameters)
         session[token] = parameters
     return token
           

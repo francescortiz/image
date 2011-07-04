@@ -6,6 +6,7 @@ from django.utils.encoding import force_unicode
 from django.core.urlresolvers import reverse
 from image.video_field import VideoField
 from image.templatetags.image import image_tokenize
+import threading
 
 COUNTER=0
 
@@ -59,10 +60,12 @@ class ImageCenterFormWidget(forms.Widget):
             resp += '})(django.jQuery);'
             resp += '</script>'
             resp += u'<input%s />' % flatatt(final_attrs)
-        
-            COUNTER += 1
-            if COUNTER > 4000000000:
-                COUNTER = 0
+            
+            lock = threading.Lock()
+            with lock:
+                COUNTER += 1
+                if COUNTER > 4000000000:
+                    COUNTER = 0
         except AttributeError:
             resp = 'Only available once the image has been saved'
         

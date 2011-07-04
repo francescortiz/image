@@ -28,10 +28,9 @@ It provides two URLs:
 
 ## Parameters
 Parameters are supplied in query string format.
-Since the image tag is just a wrapper for {% url image.views.image [path] [parameters] %}, we are going to talk about Common Parameters and URL Parameters.
 
 ### Common Parameters
-Parameters to use both in the "{% image [field] [parameters] %}" tag and the {% url image.views.image [path] [parameters] %} tag:
+These parameters are can be used always:
 
 * **width**: target width
 * **height**: target height
@@ -39,7 +38,7 @@ Parameters to use both in the "{% image [field] [parameters] %}" tag and the {% 
 * **overlay**: and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_DOC_ROOT.
 
 ### URL Parameters
-These parameters don't make sense when you use the "{% image [field] [parameters] %}" tag:
+This parameters don't make much sense when [field] is a path instead of a ImageField or VideoField
 
 * **url**: make a thumbnail of the given url. The url has to point to a media resource.
 * **video**: If the key exists we are going to create a thumbnail of a video.
@@ -55,6 +54,7 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 * Thumbnails are automatically removed when database entries are removed.
 * It does not use any templates or resources. Just setup urls.py and done.
 * South integration: custom fields are understood by south.
+* URLs get tokenized to the session, so it prevents direct image linkage from external sites.
 
 ## Dependencies
 
@@ -65,11 +65,10 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 I developed what I needed. Open an issue if you need any of these fixed or demand any other feature.
 
 * help_text kwarg does not work for ImageCenterField
-* I only tested it in python 1.2.5.
+* I only tested it in Django 1.2.5.
 * Thumnails are always saved in PNG format.
-* **ON WORK: I am going to implement session tokens to solve this**. It does not have yet a mechanism to prevent an attacker from creating arbitrary thumbnails and fill up your server's disk space.
 * I am no python expert, so it has issues with import paths. Just readjust them to your needs in your project.
-* South integration can also suffer from import path issues.
+* South integration can also suffer from import path issues. Check the comment at the end of fields.py
 
 ## Examples
 
@@ -99,6 +98,6 @@ Sample template:
     {% load image %}
     <img src="{% image test.image 'width=150&height=150' %}"/>
     <img src="{% image test.video 'width=150&height=150' %}"/>
-    <img src="{% url path_variable 'width=150&height=150&mode=scale' %}"/>
-    <img src="{% url '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&video=true&overlay=img/overlay.png' %}"/>
+    <img src="{% image path_variable 'width=150&height=150&mode=scale' %}"/>
+    <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&video=true&overlay=img/overlay.png' %}"/>
 

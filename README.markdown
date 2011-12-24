@@ -1,6 +1,7 @@
 ### What's new
 
-Masking, working with static files, possiblity of telling format and quality
+Masking, working with static files, possiblity of telling format and quality.
+
 **significant update: now you have to {% load img %} instead of {% load image %}**
 
 ## Introduction

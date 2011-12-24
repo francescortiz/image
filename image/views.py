@@ -77,7 +77,7 @@ def image(request, path, token):
 		overlay = None
 
 	try:
-		mask = qs['overlay']
+		mask = qs['mask']
 	except KeyError:
 		mask = None
 

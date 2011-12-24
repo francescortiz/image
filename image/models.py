@@ -4,7 +4,6 @@ from django.conf import settings
 import os
 from django.core.exceptions import ObjectDoesNotExist
 
-
 def removeDir(dirName) :
     #Remove any read-only permissions on file.
     

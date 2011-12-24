@@ -4,9 +4,9 @@ from django.utils.safestring import mark_safe
 from django.forms.util import flatatt
 from django.utils.encoding import force_unicode
 from django.core.urlresolvers import reverse
-from image.video_field import VideoField
-from image.templatetags.image import image_tokenize
+from image.templatetags.image_tag import image_tokenize
 import threading
+from image.video_field import VideoField
 
 COUNTER=0
 

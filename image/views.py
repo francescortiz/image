@@ -77,18 +77,23 @@ def image(request, path, token):
 		overlay = None
 
 	try:
+		mask = qs['overlay']
+	except KeyError:
+		mask = None
+
+	try:
 		center = qs['center']
 	except KeyError:
 		center = ".5,.5"
 	
 	try:
 		if (qs['mode'] == "scale"):
-			output_data = scale(data, int(qs['width']), int(qs['height']), overlay )
+			output_data = scale(data, int(qs['width']), int(qs['height']), overlay=overlay, mask=mask )
 		else:
-			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay, center )
+			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center )
 	except KeyError:
 		try:
-			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay, center )
+			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center )
 		except KeyError:
 			output_data = data
 		

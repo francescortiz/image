@@ -1,12 +1,11 @@
 # -*- coding: UTF-8 -*-
 from django.db import models
-from image.forms import ImageCenterFormField
 from django.db.models.signals import post_init
 from django.db.models.fields import FieldDoesNotExist
-import inspect
 import sys
 import os
 from image.video_field import VideoField
+from image.forms import ImageCenterFormField
 
 class ImageCenter(object):
     def __init__(self, image_field, x=None, y=None, xy=None):
@@ -93,20 +92,6 @@ def post_init_capture(sender, instance, *args, **kwargs):
             pass
 
 post_init.connect(post_init_capture)
-
-
-
-parent_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+"/..")
-reparent_path = os.path.abspath(parent_path+"/..")
-parent_path = parent_path.replace(reparent_path+"/","")
-
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^"+parent_path+"\.image\.fields\.ImageCenterField$"])
-    add_introspection_rules([], ["^"+parent_path+"\.image\.video_field\.VideoField$"])
-except ImportError:
-    pass
-
 
 try:
     from south.modelsinspector import add_introspection_rules

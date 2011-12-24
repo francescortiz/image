@@ -3,13 +3,12 @@
 from django import template
 from django.template.defaulttags import register
 from django.core.urlresolvers import reverse
-from image.video_field import VideoFieldFile
 import random
 from django.db.models.fields.files import ImageFieldFile
 import sha
+from image.video_field import VideoFieldFile
 
 def image_create_token(parameters):
-    #return str(random.random())+""+str(random.random())
     return sha.new(parameters).hexdigest()
 
 def image_tokenize(session, parameters):

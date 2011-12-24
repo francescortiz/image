@@ -8,6 +8,7 @@ from urllib import unquote
 import os
 from image.videothumbs import generate_thumb
 from encodings.base64_codec import base64_decode
+import urllib
 
 @cache_page(60 * 15)
 def image(request, path, token):
@@ -20,26 +21,7 @@ def image(request, path, token):
 	parms = unquote(parameters).split('&')
 	qs = {}
 	
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
-	path = path.replace("..", "")
+	path = os.path.normcase(path)
 	
 	cached_image_path = settings.IMAGE_CACHE_ROOT+"/"+path+"/"
 	cached_image_file = cached_image_path+parameters
@@ -67,7 +49,6 @@ def image(request, path, token):
 		data = generate_thumb(path)
 	else:
 		if path == "url":
-			import urllib
 			f = urllib.urlopen(qs['url'])
 			data = f.read()
 			f.close()

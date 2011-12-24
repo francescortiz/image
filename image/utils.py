@@ -1,41 +1,12 @@
 from django.conf import settings
+import Image as pil
+from cStringIO import StringIO
 
 def do_overlay(img, overlayPath):
 	if overlayPath is None:
 		return img
 	
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	overlayPath = overlayPath.replace("..","")
-	
-	
-	import Image as pil
+	overlayPath = os.path.normpath(overlayPath)
 	
 	overlay = pil.open(settings.STATIC_DOC_ROOT+"/"+overlayPath)
 	
@@ -55,8 +26,6 @@ def do_overlay(img, overlayPath):
 
 def scaleAndCrop(data, width, height, force=True, overlay=None, center=".5,.5"):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
-	import Image as pil
-	from cStringIO import StringIO
 	
 	max_width = width
 	max_height = height
@@ -114,9 +83,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, center=".5,.5"):
 
 def scale(data, width, height, overlay=None):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
-	import Image as pil
-	from cStringIO import StringIO
-	
+		
 	max_width = width
 	max_height = height
 

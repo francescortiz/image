@@ -15,14 +15,11 @@ from django.db.models.fields.files import FieldFile
 from subprocess import Popen, PIPE,check_output
 
 
-def generate_thumb(video, thumb_size=None, format='jpg', frames=100):
+def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100):
     histogram = []
-    try:
-        name = video.name
-        path = video.path
-    except AttributeError:
-        name = video
-        path = settings.MEDIA_ROOT + "/" + video
+    
+    name = video_path
+    path = video_path
         
     framemask = "%s%s%s%s" % (settings.FILE_UPLOAD_TEMP_DIR,
                               name.split('/')[-1].split('.')[0] + str(time.time()),

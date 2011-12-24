@@ -22,6 +22,10 @@ def image(request, path, token):
 	parms = unquote(parameters).split('&')
 	qs = {}
 	
+	for parm in parms:
+		parts = parm.split('=')
+		qs[parts[0]] = unquote(parts[1])
+
 	path = os.path.normcase(path)
 	
 	cached_image_path = settings.IMAGE_CACHE_ROOT+"/"+path+"/"
@@ -40,14 +44,16 @@ def image(request, path, token):
 		
 		return response
 		
-	
-	for parm in parms:
-		parts = parm.split('=')
-		qs[parts[0]] = unquote(parts[1])
+	ROOT_DIR = settings.MEDIA_ROOT
+	try:
+		if qs['static'] == "true":
+			ROOT_DIR = settings.STATIC_ROOT
+	except KeyError:
+		pass
 	
 	
 	if qs.has_key("video"):
-		data = generate_thumb(path)
+		data = generate_thumb(ROOT_DIR+"/"+smart_unicode(path))
 	else:
 		if path == "url":
 			f = urllib.urlopen(qs['url'])
@@ -55,7 +61,7 @@ def image(request, path, token):
 			f.close()
 		else:
 			# TODO: Render image showing error
-			f = open(settings.MEDIA_ROOT+"/"+smart_unicode(path), 'r')
+			f = open(ROOT_DIR+"/"+smart_unicode(path), 'r')
 			
 			data = f.read()
 			f.close()

@@ -98,7 +98,7 @@ I develop as I need to. Open an issue if you need to fix something or demand any
 
 ### TODO
 
-* Add support for named profiles.
+* Add support for named profiles in order to be able to access images without having a session (allow 3rd party image linking)
 
 ## Examples
 

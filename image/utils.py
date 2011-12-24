@@ -86,8 +86,8 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
 		img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 	
 	tmp = StringIO()
-	do_overlay(img, overlay)
 	do_mask(img, mask)
+	do_overlay(img, overlay)
 	
 	img.save(tmp, format, quality=quality)
 	tmp.seek(0)
@@ -121,8 +121,8 @@ def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FOR
 	img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 		
 	tmp = StringIO()
-	do_overlay(img, overlay)
 	do_mask(img, mask)
+	do_overlay(img, overlay)
 	
 	img.save(tmp, format, quality=quality)
 	tmp.seek(0)

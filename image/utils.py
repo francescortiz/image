@@ -1,6 +1,10 @@
 from django.conf import settings
 import Image as pil
 from cStringIO import StringIO
+import os
+
+IMAGE_DEFAULT_FORMAT = getattr(settings, 'IMAGE_DEFAULT_FORMAT', 'JPEG')
+IMAGE_DEFAULT_QUALITY = getattr(settings, 'IMAGE_DEFAULT_QUALITY', 85)
 
 def do_overlay(img, overlayPath):
 	if overlayPath is None:
@@ -8,7 +12,7 @@ def do_overlay(img, overlayPath):
 	
 	overlayPath = os.path.normpath(overlayPath)
 	
-	overlay = pil.open(settings.STATIC_DOC_ROOT+"/"+overlayPath)
+	overlay = pil.open(settings.STATIC_ROOT+"/"+overlayPath)
 	
 	# We want the overlay to fit in the image
 	iw, ih = img.size
@@ -30,12 +34,12 @@ def do_mask(img, maskPath):
 	
 	maskPath = os.path.normpath(maskPath)
 	
-	mask = pil.open(settings.STATIC_DOC_ROOT+"/"+maskPath).convert("RGBA")
+	mask = pil.open(settings.STATIC_ROOT+"/"+maskPath).convert("RGBA")
 	
 	r,g,b,a = mask.split()
 	img.putalpha(a)
 
-def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5"):
+def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 	
 	max_width = width
@@ -85,7 +89,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
 	do_overlay(img, overlay)
 	do_mask(img, mask)
 	
-	img.save(tmp, 'PNG')
+	img.save(tmp, format, quality=quality)
 	tmp.seek(0)
 	output_data = tmp.getvalue()
 	input_file.close()
@@ -93,7 +97,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
 	
 	return output_data
 
-def scale(data, width, height, overlay=None, mask=None):
+def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 		
 	max_width = width
@@ -120,7 +124,7 @@ def scale(data, width, height, overlay=None, mask=None):
 	do_overlay(img, overlay)
 	do_mask(img, mask)
 	
-	img.save(tmp, 'PNG')
+	img.save(tmp, format, quality=quality)
 	tmp.seek(0)
 	output_data = tmp.getvalue()
 	input_file.close()

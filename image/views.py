@@ -3,12 +3,13 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.utils.http import urlquote
-from image.utils import scale, scaleAndCrop
+from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY
 from urllib import unquote
 import os
 from image.videothumbs import generate_thumb
 from encodings.base64_codec import base64_decode
 import urllib
+from django.utils.encoding import smart_unicode
 
 @cache_page(60 * 15)
 def image(request, path, token):
@@ -24,7 +25,7 @@ def image(request, path, token):
 	path = os.path.normcase(path)
 	
 	cached_image_path = settings.IMAGE_CACHE_ROOT+"/"+path+"/"
-	cached_image_file = cached_image_path+parameters
+	cached_image_file = cached_image_path+token
 	
 	response = HttpResponse()
 	response['Content-type'] = 'image/jpeg'
@@ -32,7 +33,7 @@ def image(request, path, token):
 	response['Last-Modified'] = 'Fri, 24 Sep 2010 11:36:29 GMT'
 
 	# If we already have the cache we send it instead of recreating it
-	if os.path.exists(cached_image_file.decode('utf-8')):
+	if os.path.exists(smart_unicode(cached_image_file)):
 		f = open(cached_image_file, "r")
 		response.write( f.read() )
 		f.close()
@@ -53,24 +54,22 @@ def image(request, path, token):
 			data = f.read()
 			f.close()
 		else:
-			try:
-				try:
-					f = open(settings.MEDIA_ROOT+"/"+path, 'r')
-				except UnicodeEncodeError:
-					path = urlquote(path)
-					f = open(settings.MEDIA_ROOT+"/"+path, 'r')
-			except IOError:
-				#path = path.replace("!","%21")
-				#path = path.replace(" ","%20")
-				try:
-					f = open(settings.MEDIA_ROOT+"/"+path, 'r')
-				except UnicodeEncodeError:
-					path = urlquote(path)
-					f = open(settings.MEDIA_ROOT+"/"+path, 'r')
+			# TODO: Render image showing error
+			f = open(settings.MEDIA_ROOT+"/"+smart_unicode(path), 'r')
 			
 			data = f.read()
 			f.close()
 	
+	try:
+		format = qs['format']
+	except KeyError:
+		format = IMAGE_DEFAULT_FORMAT
+
+	try:
+		quality = int(qs['quality'])
+	except KeyError:
+		quality = IMAGE_DEFAULT_QUALITY
+
 	try:
 		overlay = qs['overlay']
 	except KeyError:
@@ -81,21 +80,23 @@ def image(request, path, token):
 	except KeyError:
 		mask = None
 
+	if mask is not None:
+		format = "PNG"
+
 	try:
 		center = qs['center']
 	except KeyError:
 		center = ".5,.5"
 	
 	try:
-		if (qs['mode'] == "scale"):
-			output_data = scale(data, int(qs['width']), int(qs['height']), overlay=overlay, mask=mask )
-		else:
-			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center )
+		mode = qs['mode']
 	except KeyError:
-		try:
-			output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center )
-		except KeyError:
-			output_data = data
+		mode = "crop"
+	
+	if mode == "scale":
+		output_data = scale(data, int(qs['width']), int(qs['height']), overlay=overlay, mask=mask, format=format, quality=quality )
+	else:
+		output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center, format=format, quality=quality )
 		
 	if not os.path.exists(cached_image_path):
 		os.makedirs(cached_image_path)

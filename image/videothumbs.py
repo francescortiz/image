@@ -6,7 +6,6 @@ django-videothumbs
 import cStringIO
 import sys, os, urllib, re, math
 import shutil, string, datetime, time
-import Image, ImageOps
 from PIL import Image
 
 from django.conf import settings
@@ -30,11 +29,9 @@ def generate_thumb(video, thumb_size=None, format='jpg', frames=100):
                               '.%d.',
                               format)
     # ffmpeg command for grabbing N number of frames
-    cmd = "/usr/bin/ffmpeg -y -vframes %d -i '%s' '%s'" % (frames, path, framemask)
+    cmd = "/usr/bin/ffmpeg -y -t 00:00:05 -i '%s' '%s'" % (path, framemask)
+    
     # make sure that this command worked or return.
-    
-    #output = check_output(["ffmpeg","-y","-vframes",str(frames),"-i",path,framemask], stderr=PIPE)
-    
     if os.system(cmd) != 0:
         raise EnvironmentError("ffmpeg error")
     
@@ -117,10 +114,13 @@ def generate_thumb(video, thumb_size=None, format='jpg', frames=100):
 
     image2.save(io, format)
         
-    # unlink temp files
-    for i in range(1, n+1):
+    # We don't know how many frames we capture. We just captured the first 5 seconds, so keep removing until not found
+    for i in range(1, 9999):
         fname = framemask % i
-        os.unlink(fname)
+        try:
+            os.unlink(fname)
+        except OSError:
+            break
     
     return io.getvalue()
 

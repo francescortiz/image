@@ -10,9 +10,9 @@ def do_overlay(img, overlayPath):
 	
 	overlay = pil.open(settings.STATIC_DOC_ROOT+"/"+overlayPath)
 	
+	# We want the overlay to fit in the image
 	iw, ih = img.size
 	ow, oh = overlay.size
-	
 	if ow>iw:
 		overlay = overlay.resize((iw,iw), pil.ANTIALIAS)
 		ow, oh = overlay.size
@@ -24,7 +24,18 @@ def do_overlay(img, overlayPath):
 	
 	return img
 
-def scaleAndCrop(data, width, height, force=True, overlay=None, center=".5,.5"):
+def do_mask(img, maskPath):
+	if maskPath is None:
+		return img
+	
+	maskPath = os.path.normpath(maskPath)
+	
+	mask = pil.open(settings.STATIC_DOC_ROOT+"/"+maskPath).convert("RGBA")
+	
+	r,g,b,a = mask.split()
+	img.putalpha(a)
+
+def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5"):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 	
 	max_width = width
@@ -72,6 +83,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, center=".5,.5"):
 	
 	tmp = StringIO()
 	do_overlay(img, overlay)
+	do_mask(img, mask)
 	
 	img.save(tmp, 'PNG')
 	tmp.seek(0)
@@ -81,7 +93,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, center=".5,.5"):
 	
 	return output_data
 
-def scale(data, width, height, overlay=None):
+def scale(data, width, height, overlay=None, mask=None):
 	"""Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 		
 	max_width = width
@@ -106,6 +118,7 @@ def scale(data, width, height, overlay=None):
 		
 	tmp = StringIO()
 	do_overlay(img, overlay)
+	do_mask(img, mask)
 	
 	img.save(tmp, 'PNG')
 	tmp.seek(0)

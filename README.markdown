@@ -18,9 +18,21 @@ This is why I created my own image resizing library for django.
 
 * **IMAGE_CACHE_ROOT**: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
 
-* **IMAGE_DEFAULT_FORMAT**: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
+* **IMAGE_DEFAULT_FORMAT**: (default='JPEG') It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
 
-* **IMAGE_DEFAULT_QUALITY**: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
+* **IMAGE_DEFAULT_QUALITY**: (default=85) It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
+
+* **IMAGE_FONT_FILE**: (default=[image package path]/FreeFont.ttf) The font file to use for error messages.
+
+* **IMAGE_FONT_LINE_HEIGHT**: (default=.7) A base 1 percentage (1 equals 100%) to set line height for the font.
+
+* **IMAGE_FONT_BACKGROUND**: ( default=(255,255,255,255) ) Background color for errors. RGBA format
+
+* **IMAGE_FONT_LINE_HEIGHT**: ( default=(0,0,0,255) ) Foreground color for errors. RGBA format
+
+* **IMAGE_ERROR_NOT_FOUND**: ( default="Image not found" ) Text to show when an image is not found.
+
+* **IMAGE_ERROR_NOT_VALID**: ( default="Image not valid" ) Text to show when an image is not valid.
 
 ### Dependency on django settings
 

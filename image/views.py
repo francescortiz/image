@@ -10,6 +10,10 @@ from image.videothumbs import generate_thumb
 from encodings.base64_codec import base64_decode
 import urllib
 from django.utils.encoding import smart_unicode
+from image.image_error import image_text
+
+IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
+IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
 
 @cache_page(60 * 15)
 def image(request, path, token):
@@ -52,20 +56,6 @@ def image(request, path, token):
 		pass
 	
 	
-	if qs.has_key("video"):
-		data = generate_thumb(ROOT_DIR+"/"+smart_unicode(path))
-	else:
-		if path == "url":
-			f = urllib.urlopen(qs['url'])
-			data = f.read()
-			f.close()
-		else:
-			# TODO: Render image showing error
-			f = open(ROOT_DIR+"/"+smart_unicode(path), 'r')
-			
-			data = f.read()
-			f.close()
-	
 	try:
 		format = qs['format']
 	except KeyError:
@@ -99,10 +89,32 @@ def image(request, path, token):
 	except KeyError:
 		mode = "crop"
 	
-	if mode == "scale":
-		output_data = scale(data, int(qs['width']), int(qs['height']), overlay=overlay, mask=mask, format=format, quality=quality )
+	width = int( qs['width'] )
+	height = int( qs['height'] )
+	
+	if qs.has_key("video"):
+		data = generate_thumb(ROOT_DIR+"/"+smart_unicode(path))
 	else:
-		output_data = scaleAndCrop(data, int(qs['width']), int(qs['height']), True, overlay=overlay, mask=mask, center=center, format=format, quality=quality )
+		try:
+			try:
+				f = urllib.urlopen(qs['url'])
+				data = f.read()
+				f.close()
+			except KeyError:
+				f = open(ROOT_DIR+"/"+smart_unicode(path), 'r')
+				data = f.read()
+				f.close()
+		except IOError:
+			data = image_text(IMAGE_ERROR_NOT_FOUND, width, height)
+			
+	
+	try:
+		if mode == "scale":
+			output_data = scale(data, width, height, overlay=overlay, mask=mask, format=format, quality=quality )
+		else:
+			output_data = scaleAndCrop(data, width, height, True, overlay=overlay, mask=mask, center=center, format=format, quality=quality )
+	except IOError:
+		output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
 		
 	if not os.path.exists(cached_image_path):
 		os.makedirs(cached_image_path)

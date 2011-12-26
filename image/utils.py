@@ -17,13 +17,21 @@ def do_overlay(img, overlayPath):
 	# We want the overlay to fit in the image
 	iw, ih = img.size
 	ow, oh = overlay.size
+	overlay_ratio =float(ow)/float(oh)
+	have_to_scale = False
 	if ow>iw:
-		overlay = overlay.resize((iw,iw), pil.ANTIALIAS)
-		ow, oh = overlay.size
+		ow = iw
+		oh = int (float(iw) / overlay_ratio)
+		have_to_scale = True
 	if oh>ih:
-		overlay = overlay.resize((ih,ih), pil.ANTIALIAS)
+		ow = int (float(ih) * overlay_ratio)
+		oh = ih
+		have_to_scale = True
+		
+	if have_to_scale:
+		overlay = overlay.resize((ow,oh), pil.ANTIALIAS)
 		ow, oh = overlay.size
-	
+
 	img.paste(overlay, (int((iw-ow)/2),int((ih-oh)/2)), overlay)
 	
 	return img
@@ -35,6 +43,12 @@ def do_mask(img, maskPath):
 	maskPath = os.path.normpath(maskPath)
 	
 	mask = pil.open(settings.STATIC_ROOT+"/"+maskPath).convert("RGBA")
+	
+	# We want the mask to have the same size than the image
+	iw, ih = img.size
+	mw, mh = mask.size
+	if mw != iw or mh != ih:
+		mask = mask.resize((iw,ih), pil.ANTIALIAS)
 	
 	r,g,b,a = mask.split()
 	img.putalpha(a)

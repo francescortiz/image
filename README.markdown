@@ -69,7 +69,7 @@ Parameters are supplied in query string format.
 * **height**: [required] target height. Set it to a big number if you are scaling to fit horizontally.
 * **mode**: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.
 * **overlay**: and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
-* **mask**: a mask image. the source image has to be cropped to the mask image size. Mask search path is STATIC_ROOT. **If you set a mask, format switches automatically to PNG**
+* **mask**: a mask image. the mask will be resized to the rendered image size. Mask search path is STATIC_ROOT. **If you set a mask, format switches automatically to PNG**
 * **static**: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.
 * **format**: one of JPG, PNG, etc.
 * **quality**: quality to use for "format"

@@ -34,6 +34,10 @@ This is why I created my own image resizing library for django.
 
 * **IMAGE_ERROR_NOT_VALID**: ( default="Image not valid" ) Text to show when an image is not valid.
 
+* **IMAGE_ERROR_VIDEO_NOT_FOUND**: ( default="Video not found" ) Text to show when a video is not found.
+
+* **IMAGE_ERROR_FFMPEG**: ( default="Video error" ) Text to show when ffmpeg fails.
+
 ### Dependency on django settings
 
 * **STATIC_ROOT**: Only if you use overlay or mask.

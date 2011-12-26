@@ -93,7 +93,7 @@ def image(request, path, token):
 	height = int( qs['height'] )
 	
 	if qs.has_key("video"):
-		data = generate_thumb(ROOT_DIR+"/"+smart_unicode(path))
+		data = generate_thumb(ROOT_DIR+"/"+smart_unicode(path), width=width, height=height)
 	else:
 		try:
 			try:

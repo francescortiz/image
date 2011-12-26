@@ -13,13 +13,19 @@ from django.core.files.base import ContentFile
 from django.db.models import FileField
 from django.db.models.fields.files import FieldFile
 from subprocess import Popen, PIPE,check_output
+from image.image_error import image_text
 
+IMAGE_ERROR_VIDEO_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_VIDEO_NOT_FOUND', "Video not found")
+IMAGE_ERROR_FFMPEG = getattr(settings, 'IMAGE_ERROR_FFMPEG', "Video error")
 
-def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100):
+def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=100,height=100):
     histogram = []
     
     name = video_path
     path = video_path
+    
+    if not os.path.exists(video_path):
+        return image_text(IMAGE_ERROR_VIDEO_NOT_FOUND, width, height)
         
     framemask = "%s%s%s%s" % (settings.FILE_UPLOAD_TEMP_DIR,
                               name.split('/')[-1].split('.')[0] + str(time.time()),
@@ -30,7 +36,7 @@ def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100):
     
     # make sure that this command worked or return.
     if os.system(cmd) != 0:
-        raise EnvironmentError("ffmpeg error")
+        return image_text(IMAGE_ERROR_FFMPEG, width, height)
     
     # loop through the generated images, open, and generate the image histogram.
     for i in range(1, frames + 1):

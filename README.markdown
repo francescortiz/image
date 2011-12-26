@@ -1,6 +1,7 @@
 ### What's new
 
 Masking, working with static files, possiblity of telling format and quality.
+Show error images instead of raising exceptions.
 
 **significant update: now you have to {% load img %} instead of {% load image %}**
 

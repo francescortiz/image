@@ -15,7 +15,7 @@ from image.image_error import image_text
 IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
 IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
 
-@cache_page(60 * 15)
+#@cache_page(60 * 15)
 def image(request, path, token):
 	
 	if "is_admin=true" in token and request.user.has_perm('admin'):

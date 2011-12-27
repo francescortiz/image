@@ -5,4 +5,3 @@ urlpatterns = patterns('image.views',
     (r'^image/(?P<path>.*)/((?P<token>.*))$', 'image'),
     (r'^image-crosshair', 'crosshair'),
 )
-

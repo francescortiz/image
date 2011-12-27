@@ -39,6 +39,8 @@ This is why I created my own image resizing library for django.
 
 * **IMAGE_ERROR_FFMPEG**: ( default="Video error" ) Text to show when ffmpeg fails.
 
+* **IMAGE_WRONG_REQUEST**: (default="Wrong request" ) Text to show when the request is wrong
+
 ### Dependency on django settings
 
 * **STATIC_ROOT**: Only if you use overlay or mask.

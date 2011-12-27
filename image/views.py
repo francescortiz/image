@@ -14,6 +14,7 @@ from image.image_error import image_text
 
 IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
 IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
+IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
 
 #@cache_page(60 * 15)
 def image(request, path, token):
@@ -28,7 +29,10 @@ def image(request, path, token):
 	
 	for parm in parms:
 		parts = parm.split('=')
-		qs[parts[0]] = unquote(parts[1])
+		try:
+			qs[parts[0]] = unquote(parts[1])
+		except IndexError:
+			return HttpResponse(IMAGE_WRONG_REQUEST)
 
 	path = os.path.normcase(path)
 	

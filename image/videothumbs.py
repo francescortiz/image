@@ -4,22 +4,12 @@ django-videothumbs
 """
 
 import cStringIO
-import sys
 import os
-import urllib
-import re
 import math
-import shutil
-import string
-import datetime
 import time
 from PIL import Image
 
 from django.conf import settings
-from django.core.files.base import ContentFile
-from django.db.models import FileField
-from django.db.models.fields.files import FieldFile
-from subprocess import Popen, PIPE, check_output
 from image.image_error import image_text
 
 IMAGE_ERROR_VIDEO_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_VIDEO_NOT_FOUND', "Video not found")

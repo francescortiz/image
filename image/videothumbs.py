@@ -29,11 +29,13 @@ IMAGE_ERROR_FFMPEG = getattr(settings, 'IMAGE_ERROR_FFMPEG', "Video error")
 def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
     histogram = []
 
+    http_status = '200'
+    
     name = video_path
     path = video_path
 
     if not os.path.exists(video_path):
-        return image_text(IMAGE_ERROR_VIDEO_NOT_FOUND, width, height)
+        return image_text(IMAGE_ERROR_VIDEO_NOT_FOUND, width, height), '404'
 
     framemask = "%s%s%s%s" % (settings.FILE_UPLOAD_TEMP_DIR,
                               name.split('/')[-1].split('.')[0] + str(time.time()),
@@ -44,7 +46,7 @@ def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=
 
     # make sure that this command worked or return.
     if os.system(cmd) != 0:
-        return image_text(IMAGE_ERROR_FFMPEG, width, height)
+        return image_text(IMAGE_ERROR_FFMPEG, width, height), '500'
 
     # loop through the generated images, open, and generate the image histogram.
     for i in range(1, frames + 1):
@@ -133,4 +135,4 @@ def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=
         except OSError:
             break
 
-    return io.getvalue()
+    return io.getvalue(), http_status

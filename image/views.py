@@ -34,7 +34,7 @@ def image(request, path, token):
             qs[parts[0]] = unquote(parts[1])
         except IndexError:
             response = HttpResponse(IMAGE_WRONG_REQUEST)
-            response.status_code = '500'
+            response.status_code = 500
             return response
 
     path = os.path.normcase(path)
@@ -46,7 +46,7 @@ def image(request, path, token):
     response['Content-type'] = 'image/jpeg'
     response['Expires'] = 'Fri, 09 Dec 2327 08:34:31 GMT'
     response['Last-Modified'] = 'Fri, 24 Sep 2010 11:36:29 GMT'
-    response.status_code = '200'
+    response.status_code = 200
 
     # If we already have the cache we send it instead of recreating it
     if os.path.exists(smart_unicode(cached_image_file)):
@@ -113,7 +113,7 @@ def image(request, path, token):
                 data = f.read()
                 f.close()
         except IOError:
-            response.status_code = '404'
+            response.status_code = 404
             data = image_text(IMAGE_ERROR_NOT_FOUND, width, height)
 
     try:
@@ -122,10 +122,10 @@ def image(request, path, token):
         else:
             output_data = scaleAndCrop(data, width, height, True, overlay=overlay, mask=mask, center=center, format=format, quality=quality)
     except IOError:
-        response.status_code = '500'
+        response.status_code = 500
         output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
 
-    if response.status_code == '200':
+    if response.status_code == 200:
         if not os.path.exists(cached_image_path):
             os.makedirs(cached_image_path)
     

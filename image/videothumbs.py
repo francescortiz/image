@@ -19,7 +19,7 @@ IMAGE_ERROR_FFMPEG = getattr(settings, 'IMAGE_ERROR_FFMPEG', "Video error")
 def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
     histogram = []
 
-    http_status = '200'
+    http_status = 200
     
     name = video_path
     path = video_path

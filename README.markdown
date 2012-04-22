@@ -103,6 +103,10 @@ Parameters are supplied in query string format.
 * **static**: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.
 * **format**: one of JPG, PNG, etc.
 * **quality**: quality to use for "format"
+* **autogen**: if set, the image will be pregenerated, allowing external linking (newsletters, etc).
+* **background=RRGGBBAA**: if set, background color to apply to the image (only makes sense on transparent images).
+* **fill=RRGGBBAA**: forces the size of the generated image to be the request width and height. Unless "mode" is set to "scale", it behaves exactly as "background=RRGGBBAA".
+
 
 ### Other parameters
 
@@ -124,8 +128,8 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 * Thumbnails are automatically removed when database entries are removed.
 * It does not use any templates or resources. Just setup urls.py and done.
 * South integration: custom fields are understood by south.
-* URLs get tokenized to the session, so it prevents direct image linkage from external sites.
-* If you set IMAGE_CACHE_ROOT to a directory that is in your public http docs, then you can use mod_rewrite or equivalents to have the HTTP server to serve the resized image directly.
+* Unless "autogen=true" is set, it prevents external linking.
+* If you set IMAGE_CACHE_ROOT to a directory that is in your public http directory, you can use mod_rewrite or equivalents to have the HTTP server serve the resized images directly.
 
 ## Dependencies
 
@@ -136,11 +140,6 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 I develop as I need to. Open an issue if you need to fix something or demand any other feature.
 
 * help_text kwarg does not work for ImageCenterField
-* You cannot serve images outside of your website unless you have them already thumbnailed and you serve them with mod_rewrite or equivalent through an appropiate IMAGE_CACHE_ROOT. This is a security feature that you will be able to bypass once named profiles.
-
-### TODO
-
-* Add support for named profiles in order to be able to access images without having a session (allow 3rd party image linking)
 
 ## Examples
 
@@ -171,5 +170,5 @@ Sample template:
     <img src="{% image test.image 'width=150&height=150&format=JPEG&quality=95' %}"/>
     <img src="{% image test.video 'width=150&height=150&format=PNG' %}"/>
     <img src="{% image path_variable 'width=150&height=150&mode=scale&static=true' %}"/>
-    <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&video=true&overlay=img/overlay.png' %}"/>
+    <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&overlay=img/overlay.png' %}"/>
 

@@ -1,9 +1,32 @@
 ### What's new
 
+**April 2012**
+
+- make it compatible with django 1.4
+
+- make it compatible with django-reversion.
+
+- parameter "autogen=true":
+    Add support for precreation of images.
+    Allows external linking, good for newsletters and others
+
+- parameter "background=RRGGBBAA":
+    Allow to set background color to an RGBA hex value.
+    Applied before mask and overlay.
+
+- parameter "fill=RRGGBBAA":
+    When using "mode=scale", allow to force size of output image
+    to target with and height.
+    You have to pass and RGBA hex value that will be set as background color.
+    Applied before mask and overlay.
+
+**December 2011**
+
 Masking, working with static files, possiblity of telling format and quality.
 Show error images instead of raising exceptions.
 
-**significant update: now you have to {% load img %} instead of {% load image %}**
+Significant update: now you have to {% load img %} instead of {% load image %}
+
 
 ## Introduction
 I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images. Also, many thumbnailers forget about videos.

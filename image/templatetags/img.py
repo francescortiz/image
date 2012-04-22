@@ -7,21 +7,19 @@ import random
 from django.db.models.fields.files import ImageFieldFile
 import sha
 from image.video_field import VideoFieldFile
-
-
-def image_create_token(parameters):
-    return sha.new(parameters).hexdigest()
-
+from image import views as image_views
+from image.utils import image_create_token
 
 def image_tokenize(session, parameters):
     token = None
-    for k, v in session.items():
-        if v == parameters:
-            token = k
-            break
-    if token is None:
-        token = "image_token_" + image_create_token(parameters)
-        session[token] = parameters
+    if session:
+        for k, v in session.items():
+            if v == parameters:
+                token = k
+                break
+        if token is None:
+            token = image_create_token(parameters)
+            session[token] = parameters
     return token
 
 
@@ -31,8 +29,12 @@ class ImageNode(template.Node):
         self.parameters = template.Variable(parameters)
 
     def render(self, context):
-        request = context['request']
-        session = request.session
+        try:
+            request = context['request']
+            session = request.session
+        except KeyError:
+            session = None
+            
         image_field = self.image_field.resolve(context)
         try:
             parameters = self.parameters.resolve(context)
@@ -47,6 +49,10 @@ class ImageNode(template.Node):
                 parameters = parameters + "&center=" + image_field.__image_center_instance__.__unicode__()
             except AttributeError:
                 pass
+            
+        if "autogen=true" in parameters:
+            # We want the image to be generated immediately
+            image_views.image(None, str(image_field), parameters, True)
 
         return reverse(
             'image.views.image',

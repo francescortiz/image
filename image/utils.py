@@ -2,9 +2,14 @@ from django.conf import settings
 import Image as pil
 from cStringIO import StringIO
 import os
+import sha
 
 IMAGE_DEFAULT_FORMAT = getattr(settings, 'IMAGE_DEFAULT_FORMAT', 'JPEG')
 IMAGE_DEFAULT_QUALITY = getattr(settings, 'IMAGE_DEFAULT_QUALITY', 85)
+
+
+def image_create_token(parameters):
+    return "image_token_%s" % sha.new(parameters).hexdigest()
 
 
 def do_overlay(img, overlayPath):
@@ -56,7 +61,53 @@ def do_mask(img, maskPath):
     img.putalpha(a)
 
 
-def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY):
+def do_fill(img, fill, width, height):
+    if fill is None:
+        return img
+
+    overlay = img
+    
+    fill_color = (
+        int("0x%s" % fill[0:2], 16),
+        int("0x%s" % fill[2:4], 16),
+        int("0x%s" % fill[4:6], 16),
+        int("0x%s" % fill[6:8], 16),
+    )
+    img = pil.new("RGBA", (width,height), fill_color)
+
+    iw, ih = img.size
+    ow, oh = overlay.size
+
+    img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
+
+    return img
+
+
+def do_background(img, background):
+    if background is None:
+        return img
+
+    overlay = img
+    
+    fill_color = (
+        int("0x%s" % background[0:2], 16),
+        int("0x%s" % background[2:4], 16),
+        int("0x%s" % background[4:6], 16),
+        int("0x%s" % background[6:8], 16),
+    )
+    img = pil.new("RGBA", overlay.size, fill_color)
+
+    iw, ih = img.size
+    ow, oh = overlay.size
+
+    img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
+
+    return img
+
+
+
+
+def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -103,6 +154,8 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
         img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     tmp = StringIO()
+    img = do_fill(img, fill, width, height)
+    img = do_background(img, background)
     do_mask(img, mask)
     do_overlay(img, overlay)
 
@@ -115,7 +168,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
     return output_data
 
 
-def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY):
+def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -139,6 +192,8 @@ def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FOR
     img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     tmp = StringIO()
+    img = do_fill(img, fill, width, height)
+    img = do_background(img, background)
     do_mask(img, mask)
     do_overlay(img, overlay)
 

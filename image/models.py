@@ -31,7 +31,9 @@ def removeCache(image_path):
     removeDir(settings.IMAGE_CACHE_ROOT + "/" + image_path)
 
 
-def prepareImageCacheCleanup(sender, instance, **kwargs):
+def prepareImageCacheCleanup(sender, instance=None, **kwargs):
+    if instance is None:
+        return;
     instance.old_image_fields = {}
     try:
         old_instance = sender.objects.get(pk=instance.pk)
@@ -43,7 +45,7 @@ def prepareImageCacheCleanup(sender, instance, **kwargs):
             instance.old_image_fields[field.attname] = field.value_to_string(old_instance)
 
 
-def clearPreparedImageCacheCleanup(sender, instance, created, **kwargs):
+def clearPreparedImageCacheCleanup(sender, instance=None, created=False, **kwargs):
     if created:
         return
     if instance is None:
@@ -63,3 +65,11 @@ def clearImageCache(sender, instance, **kwargs):
 pre_save.connect(prepareImageCacheCleanup)
 post_save.connect(clearPreparedImageCacheCleanup)
 post_delete.connect(clearImageCache)
+
+#reversion compatibility
+try:
+    from reversion.models import pre_revision_commit, post_revision_commit
+    pre_revision_commit.connect(prepareImageCacheCleanup)
+    post_revision_commit.connect(clearPreparedImageCacheCleanup)
+except ImportError:
+    pass

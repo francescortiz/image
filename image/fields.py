@@ -68,7 +68,7 @@ class ImageCenterField(models.Field):
         return ImageCenter(self.image_field, xy=value)
 
     # Esta función es llamada al escribir un valor en la base de datos
-    def get_db_prep_value(self, value):
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         return str(value.x) + "," + str(value.y)
 
     def value_to_string(self, obj):

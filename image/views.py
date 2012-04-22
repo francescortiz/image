@@ -3,7 +3,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.utils.http import urlquote
-from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY
+from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
+    image_create_token
 from urllib import unquote
 import os
 from image.videothumbs import generate_thumb
@@ -18,27 +19,19 @@ IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
 
 
 #@cache_page(60 * 15)
-def image(request, path, token):
+def image(request, path, token, autogen=False):
 
-    if "is_admin=true" in token and request.user.has_perm('admin'):
+    is_admin = False
+    if ("is_admin=true" in token and request and request.user.has_perm('admin')) or autogen:
         parameters = token
+        is_admin = True
+        if autogen:
+            token = image_create_token(parameters)
     else:
-        parameters = request.session.get(token, '')
-
-    parms = unquote(parameters).split('&')
-    qs = {}
-
-    for parm in parms:
-        parts = parm.split('=')
-        try:
-            qs[parts[0]] = unquote(parts[1])
-        except IndexError:
-            response = HttpResponse(IMAGE_WRONG_REQUEST)
-            response.status_code = 500
-            return response
+        parameters = request.session.get(token, token)
 
     path = os.path.normcase(path)
-
+    
     cached_image_path = settings.IMAGE_CACHE_ROOT + "/" + path + "/"
     cached_image_file = cached_image_path + token
 
@@ -47,14 +40,36 @@ def image(request, path, token):
     response['Expires'] = 'Fri, 09 Dec 2327 08:34:31 GMT'
     response['Last-Modified'] = 'Fri, 24 Sep 2010 11:36:29 GMT'
     response.status_code = 200
+    
+    print cached_image_file
 
     # If we already have the cache we send it instead of recreating it
     if os.path.exists(smart_unicode(cached_image_file)):
+        
+        if autogen:
+            return 'Already generated'
+        
         f = open(cached_image_file, "r")
         response.write(f.read())
         f.close()
 
         return response
+    
+    parms = unquote(parameters).split('&')
+    qs = {}
+
+    for parm in parms:
+        parts = parm.split('=')
+        try:
+            qs[parts[0]] = unquote(parts[1])
+        except IndexError:
+            if parameters != token:
+                response = HttpResponse(IMAGE_WRONG_REQUEST)
+                response.status_code = 500
+                return response
+
+    if parameters == token and not is_admin:
+        return HttpResponse("Forbidden", status=403)
 
     ROOT_DIR = settings.MEDIA_ROOT
     try:
@@ -82,6 +97,16 @@ def image(request, path, token):
         mask = qs['mask']
     except KeyError:
         mask = None
+
+    try:
+        fill = qs['fill']
+    except KeyError:
+        fill = None
+
+    try:
+        background = qs['background']
+    except KeyError:
+        background = None
 
     if mask is not None:
         format = "PNG"
@@ -118,9 +143,9 @@ def image(request, path, token):
 
     try:
         if mode == "scale":
-            output_data = scale(data, width, height, overlay=overlay, mask=mask, format=format, quality=quality)
+            output_data = scale(data, width, height, overlay=overlay, mask=mask, format=format, quality=quality, fill=fill, background=background)
         else:
-            output_data = scaleAndCrop(data, width, height, True, overlay=overlay, mask=mask, center=center, format=format, quality=quality)
+            output_data = scaleAndCrop(data, width, height, True, overlay=overlay, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background)
     except IOError:
         response.status_code = 500
         output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
@@ -132,7 +157,12 @@ def image(request, path, token):
         f = open(cached_image_file, "w")
         f.write(output_data)
         f.close()
-
+        if autogen:
+            return 'Generated ' + str(response.status_code)
+    else:
+        if autogen:
+            return 'Failed ' + cached_image_file
+    
     response.write(output_data)
 
     return response

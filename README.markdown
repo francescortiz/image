@@ -150,7 +150,7 @@ Parameters are supplied in query string format.
 * **mode**: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.
 * **overlay** (multiple values accepted): and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
 * **overlay_source=media/static** (multiple values accepted): tells where to look for the overlay, either MEDIA_ROOT or STATIC_ROOT.
-* **overlay_tint=RRGGBBAA** overlay_tint=RRGGBBAA**II** (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.
+* **overlay_tint=RRGGBBAA overlay_tint=RRGGBBAAII** (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.
 * **mask**: a mask image. the mask will be resized to the rendered image size. Mask search path is STATIC_ROOT. **If you set a mask, format switches automatically to PNG**
 * **static**: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.
 * **format**: one of JPG, PNG, etc.

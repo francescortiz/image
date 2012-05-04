@@ -105,7 +105,7 @@ It provides two URLs:
 ## Overlays
 You can have multiple overlays, each one with its overlay_source and its overlay_tint.
 
-**overlay_tint=RRGGBBAA or overlay_tint=RRGGBBAAII**
+### overlay_tint=RRGGBBAA or overlay_tint=RRGGBBAAII
 
 II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.
 
@@ -113,7 +113,11 @@ If AA smaller than ff, the layer will become transparent. You cannot make the la
 
 Accepts value None (overlay_tint=None)
 
-## Examples:
+### overlay_source=media/static
+
+Where to look for overlay, either MEDIA_ROOT or STATIC_ROOT
+
+### Examples:
 
 overlay=test/img0.png&overlay_tint=**ff0000ff**&overlay=test/img1.png&overlay_tint=**00ff0077**
 

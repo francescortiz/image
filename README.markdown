@@ -162,7 +162,7 @@ Parameters are supplied in query string format.
 
 ### Other parameters
 
-* **url**: make a thumbnail of the given url. The url has to point to a media resource. If url is given, [source] is ignored.
+* **url**: make a thumbnail of the given url. If url is given, [source] is ignored.
 
 These next two parameters don't make sense if you are thumbnailing an ImageField or VideoField, because if so image takes care of them automatically.
 

@@ -1,5 +1,17 @@
 ### What's new
 
+**May 2012**
+
+- parameter "overlay_source=media":
+    looks for overlay image in MEDIA_ROOT instead of STATIC_ROOT
+
+- parameter "overlay_tint=RRGGBBAA" or  "overlay_tint=RRGGBBAAII":
+    Tints the overlay.
+    See below.
+
+- support for multiple overlays:
+    See below.
+
 **April 2012**
 
 - make it compatible with django 1.4
@@ -90,6 +102,27 @@ It provides two URLs:
 * /image/(?P\<**path**\>)/(?P\<**parameters**\>): It is this view that actually does the work. **path** will be searched in the directory settings.MEDIA_ROOT. See below for **parameters**.
 * /image-crosshair: Just a base64 encoded png to use in the admin section.
 
+## Overlays
+You can have multiple overlays, each one with its overlay_source and its overlay_tint.
+**overlay_tint=RRGGBBAA or overlay_tint=RRGGBBAAII**
+    II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.
+    If AA smaller than ff, the layer will become transparent. You cannot make the layer transparent without changing its color. Open an issue if you have this need.
+    Accepts value None (overlay_tint=None)
+
+Examples:
+    overlay=test/img0.png&overlay_tint=**ff0000ff**&overlay=test/img1.png&overlay_tint=**00ff0077**
+    overlay=test/img0.png&overlay_tint=**None**&overlay=test/img1.png&overlay_tint=**00ff0077aa**
+    overlay=test/img0.png&overlay_source=**media**&overlay=test/img1.png&overlay_source=**static**
+
+## Caution with overlays
+**If you use overlay_tint or overlay_source, the position in which they appear does not matter**.
+The order of appearances is used to associate overlays with overlay_tints and overlay_sources. In other words, the first appearance of overlay_tint is associated with the first overlay. The same applies for overlay_source.
+These two are equivalent:
+    overlay=test/img0.png&**overlay_tint=ff0000ff**&overlay=test/img1.png
+    overlay=test/img0.png&overlay=test/img1.png**&overlay_tint=ff0000ff**
+To tint only the second overlay, you have to do this:
+    overlay=test/img0.png**&overlay_tint=None**&overlay=test/img1.png**&overlay_tint=ff0000ff**
+
 ## Parameters
 Parameters are supplied in query string format.
 
@@ -98,7 +131,9 @@ Parameters are supplied in query string format.
 * **width**: [required] target width. Set it to a big number if you are scaling to fit vertically.
 * **height**: [required] target height. Set it to a big number if you are scaling to fit horizontally.
 * **mode**: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.
-* **overlay**: and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
+* **overlay** (multiple values accepted): and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
+* **overlay_source=media/static** (multiple values accepted): tells where to look for the overlay, either MEDIA_ROOT or STATIC_ROOT.
+* **overlay_tint=RRGGBBAA** overlay_tint=RRGGBBAA**II** (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.
 * **mask**: a mask image. the mask will be resized to the rendered image size. Mask search path is STATIC_ROOT. **If you set a mask, format switches automatically to PNG**
 * **static**: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.
 * **format**: one of JPG, PNG, etc.

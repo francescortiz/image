@@ -107,29 +107,34 @@ You can have multiple overlays, each one with its overlay_source and its overlay
 
 **overlay_tint=RRGGBBAA or overlay_tint=RRGGBBAAII**
 
-    II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.
-    If AA smaller than ff, the layer will become transparent. You cannot make the layer transparent without changing its color. Open an issue if you have this need.
-    Accepts value None (overlay_tint=None)
+II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.
 
-Examples:
+If AA smaller than ff, the layer will become transparent. You cannot make the layer transparent without changing its color. Open an issue if you have this need.
 
-    overlay=test/img0.png&overlay_tint=**ff0000ff**&overlay=test/img1.png&overlay_tint=**00ff0077**
-    overlay=test/img0.png&overlay_tint=**None**&overlay=test/img1.png&overlay_tint=**00ff0077aa**
-    overlay=test/img0.png&overlay_source=**media**&overlay=test/img1.png&overlay_source=**static**
+Accepts value None (overlay_tint=None)
+
+## Examples:
+
+overlay=test/img0.png&overlay_tint=**ff0000ff**&overlay=test/img1.png&overlay_tint=**00ff0077**
+
+overlay=test/img0.png&overlay_tint=**None**&overlay=test/img1.png&overlay_tint=**00ff0077aa**
+
+overlay=test/img0.png&overlay_source=**media**&overlay=test/img1.png&overlay_source=**static**
 
 ## Caution with overlays
 **If you use overlay_tint or overlay_source, the position in which they appear does not matter**.
 
 The order of appearances is used to associate overlays with overlay_tints and overlay_sources. In other words, the first appearance of overlay_tint is associated with the first overlay. The same applies for overlay_source.
 
-These two are equivalent:
+### These two are equivalent:
 
-    overlay=test/img0.png&**overlay_tint=ff0000ff**&overlay=test/img1.png
-    overlay=test/img0.png&overlay=test/img1.png**&overlay_tint=ff0000ff**
+overlay=test/img0.png&**overlay_tint=ff0000ff**&overlay=test/img1.png
 
-To tint only the second overlay, you have to do this:
+overlay=test/img0.png&overlay=test/img1.png**&overlay_tint=ff0000ff**
 
-    overlay=test/img0.png**&overlay_tint=None**&overlay=test/img1.png**&overlay_tint=ff0000ff**
+### To tint only the second overlay, you have to do this:
+
+overlay=test/img0.png**&overlay_tint=None**&overlay=test/img1.png**&overlay_tint=ff0000ff**
 
 ## Parameters
 Parameters are supplied in query string format.

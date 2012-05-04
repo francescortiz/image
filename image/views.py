@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.views.decorators.cache import cache_page
 from django.utils.http import urlquote
 from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
@@ -16,7 +16,6 @@ from image.image_error import image_text
 IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
 IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
 IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
-
 
 #@cache_page(60 * 15)
 def image(request, path, token, autogen=False):
@@ -41,8 +40,6 @@ def image(request, path, token, autogen=False):
     response['Last-Modified'] = 'Fri, 24 Sep 2010 11:36:29 GMT'
     response.status_code = 200
     
-    print cached_image_file
-
     # If we already have the cache we send it instead of recreating it
     if os.path.exists(smart_unicode(cached_image_file)):
         
@@ -55,18 +52,7 @@ def image(request, path, token, autogen=False):
 
         return response
     
-    parms = unquote(parameters).split('&')
-    qs = {}
-
-    for parm in parms:
-        parts = parm.split('=')
-        try:
-            qs[parts[0]] = unquote(parts[1])
-        except IndexError:
-            if parameters != token:
-                response = HttpResponse(IMAGE_WRONG_REQUEST)
-                response.status_code = 500
-                return response
+    qs = QueryDict(parameters)
 
     if parameters == token and not is_admin:
         return HttpResponse("Forbidden", status=403)
@@ -87,11 +73,6 @@ def image(request, path, token, autogen=False):
         quality = int(qs['quality'])
     except KeyError:
         quality = IMAGE_DEFAULT_QUALITY
-
-    try:
-        overlay = qs['overlay']
-    except KeyError:
-        overlay = None
 
     try:
         mask = qs['mask']
@@ -120,9 +101,13 @@ def image(request, path, token, autogen=False):
         mode = qs['mode']
     except KeyError:
         mode = "crop"
+        
+    overlays = qs.getlist('overlay')
+    overlay_sources = qs.getlist('overlay_source')
+    overlay_tints = qs.getlist('overlay_tint')
 
-    width = int(qs['width'])
-    height = int(qs['height'])
+    width = int(qs.get('width', None))
+    height = int(qs.get('height', None))
 
     if "video" in qs:
         data, http_response = generate_thumb(ROOT_DIR + "/" + smart_unicode(path), width=width, height=height)
@@ -143,9 +128,9 @@ def image(request, path, token, autogen=False):
 
     try:
         if mode == "scale":
-            output_data = scale(data, width, height, overlay=overlay, mask=mask, format=format, quality=quality, fill=fill, background=background)
+            output_data = scale(data, width, height, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, format=format, quality=quality, fill=fill, background=background)
         else:
-            output_data = scaleAndCrop(data, width, height, True, overlay=overlay, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background)
+            output_data = scaleAndCrop(data, width, height, True, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background)
     except IOError:
         response.status_code = 500
         output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)

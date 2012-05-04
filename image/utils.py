@@ -12,13 +12,16 @@ def image_create_token(parameters):
     return "image_token_%s" % sha.new(parameters).hexdigest()
 
 
-def do_overlay(img, overlayPath):
-    if overlayPath is None:
+def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None):
+    if overlay_path is None:
         return img
 
-    overlayPath = os.path.normpath(overlayPath)
+    overlay_path = os.path.normpath(overlay_path)
 
-    overlay = pil.open(settings.STATIC_ROOT + "/" + overlayPath)
+    if overlay_source is 'media':
+        overlay = pil.open(settings.MEDIA_ROOT + "/" + overlay_path)
+    else:
+        overlay = pil.open(settings.STATIC_ROOT + "/" + overlay_path)
 
     # We want the overlay to fit in the image
     iw, ih = img.size
@@ -38,9 +41,78 @@ def do_overlay(img, overlayPath):
         overlay = overlay.resize((ow, oh), pil.ANTIALIAS)
         ow, oh = overlay.size
 
+    if overlay_tint:
+        
+        if overlay.mode != "RGBA":
+            overlay = img.convert("RGBA")
+        
+        tint_color = (
+            float(int("0x%s" % overlay_tint[0:2], 16)) / 255.0,
+            float(int("0x%s" % overlay_tint[2:4], 16)) / 255.0,
+            float(int("0x%s" % overlay_tint[4:6], 16)) / 255.0,
+            float(int("0x%s" % overlay_tint[6:8], 16)) / 255.0,
+        )
+        try:
+            intensity = float(int("0x%s" % overlay_tint[8:10], 16))
+        except ValueError:
+            intensity = 255.0
+        
+        img_data = overlay.getdata()
+        new_data = []
+        if intensity == 255.0:
+            for data in img_data:
+                data = (
+                    int(float(data[0]) * tint_color[0]),
+                    int(float(data[1]) * tint_color[1]),
+                    int(float(data[2]) * tint_color[2]),
+                    int(float(data[3]) * tint_color[3]),
+                )
+                new_data.append(data)
+        else:
+            intensity = intensity / 255.0
+            intensity_inv = 1 - intensity
+            tint_color = (
+                tint_color[0] * intensity,
+                tint_color[1] * intensity,
+                tint_color[2] * intensity,
+                tint_color[3] * intensity,
+            )
+            for data in img_data:
+                data = (
+                    int(float(data[0]) * intensity_inv + float(data[0]) * tint_color[0]),
+                    int(float(data[1]) * intensity_inv + float(data[1]) * tint_color[1]),
+                    int(float(data[2]) * intensity_inv + float(data[2]) * tint_color[2]),
+                    int(float(data[3]) * intensity_inv + float(data[3]) * tint_color[3]),
+                )
+                new_data.append(data)
+            
+        overlay.putdata(tuple(new_data))
+
     img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
 
     return img
+
+
+def do_overlays(img, overlays, overlay_tints, overlay_sources):
+    overlay_index = 0
+    
+    for overlay in overlays:
+        
+        try:
+            overlay_tint = overlay_tints[overlay_index]
+        except IndexError:
+            overlay_tint = None
+        
+        if overlay_tint == "None":
+            overlay_tint = None
+            
+        try:
+            overlay_source = overlay_sources[overlay_index]
+        except IndexError:
+            overlay_source = 'static'
+            
+        do_overlay(img, overlay, overlay_source, overlay_tint)
+        overlay_index += 1
 
 
 def do_mask(img, maskPath):
@@ -107,7 +179,7 @@ def do_background(img, background):
 
 
 
-def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
+def scaleAndCrop(data, width, height, force=True, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -157,8 +229,8 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)
     do_mask(img, mask)
-    do_overlay(img, overlay)
-
+    do_overlays(img, overlays, overlay_tints, overlay_sources)
+    
     img.save(tmp, format, quality=quality)
     tmp.seek(0)
     output_data = tmp.getvalue()
@@ -168,7 +240,7 @@ def scaleAndCrop(data, width, height, force=True, overlay=None, mask=None, cente
     return output_data
 
 
-def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
+def scale(data, width, height, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -195,7 +267,7 @@ def scale(data, width, height, overlay=None, mask=None, format=IMAGE_DEFAULT_FOR
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)
     do_mask(img, mask)
-    do_overlay(img, overlay)
+    do_overlays(img, overlays, overlay_tints, overlay_sources)
 
     img.save(tmp, format, quality=quality)
     tmp.seek(0)

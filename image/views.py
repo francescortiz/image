@@ -52,10 +52,10 @@ def image(request, path, token, autogen=False):
 
         return response
     
-    qs = QueryDict(parameters)
-
     if parameters == token and not is_admin:
         return HttpResponse("Forbidden", status=403)
+
+    qs = QueryDict(parameters)
 
     ROOT_DIR = settings.MEDIA_ROOT
     try:
@@ -64,43 +64,19 @@ def image(request, path, token, autogen=False):
     except KeyError:
         pass
 
-    try:
-        format = qs['format']
-    except KeyError:
-        format = IMAGE_DEFAULT_FORMAT
-
-    try:
-        quality = int(qs['quality'])
-    except KeyError:
-        quality = IMAGE_DEFAULT_QUALITY
-
-    try:
-        mask = qs['mask']
-    except KeyError:
-        mask = None
-
-    try:
-        fill = qs['fill']
-    except KeyError:
-        fill = None
-
-    try:
-        background = qs['background']
-    except KeyError:
-        background = None
+    format = qs.get('format', IMAGE_DEFAULT_FORMAT)
+    quality = int(qs.get('quality', IMAGE_DEFAULT_QUALITY))
+    mask = qs.get('mask', None)
 
     if mask is not None:
         format = "PNG"
 
-    try:
-        center = qs['center']
-    except KeyError:
-        center = ".5,.5"
+    fill = qs.get('fill', None)
+    background = qs.get('background', None)
+    tint = qs.get('tint', None)
 
-    try:
-        mode = qs['mode']
-    except KeyError:
-        mode = "crop"
+    center = qs.get('center', ".5,.5")
+    mode = qs.get('mode', "crop")
         
     overlays = qs.getlist('overlay')
     overlay_sources = qs.getlist('overlay_source')
@@ -128,9 +104,9 @@ def image(request, path, token, autogen=False):
 
     try:
         if mode == "scale":
-            output_data = scale(data, width, height, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, format=format, quality=quality, fill=fill, background=background)
+            output_data = scale(data, width, height, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, format=format, quality=quality, fill=fill, background=background, tint=tint)
         else:
-            output_data = scaleAndCrop(data, width, height, True, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background)
+            output_data = scaleAndCrop(data, width, height, True, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background, tint=tint)
     except IOError:
         response.status_code = 500
         output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)

@@ -11,6 +11,70 @@ IMAGE_DEFAULT_QUALITY = getattr(settings, 'IMAGE_DEFAULT_QUALITY', 85)
 def image_create_token(parameters):
     return "image_token_%s" % sha.new(parameters).hexdigest()
 
+def do_tint(img, tint):
+    
+    if tint is None or tint is 'None':
+        return
+    
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    
+    try:
+        tint_red = float(int("0x%s" % tint[0:2], 16)) / 255.0
+    except ValueError:
+        tint_red = 255.0
+     
+    try:
+        tint_green = float(int("0x%s" % tint[2:4], 16)) / 255.0
+    except ValueError:
+        tint_green = 255.0
+     
+    try:
+        tint_blue = float(int("0x%s" % tint[4:6], 16)) / 255.0
+    except ValueError:
+        tint_blue = 255.0
+     
+    try:
+        tint_alpha = float(int("0x%s" % tint[6:8], 16)) / 255.0
+    except ValueError:
+        tint_alpha = 255.0
+ 
+    try:
+        intensity = float(int("0x%s" % tint[8:10], 16))
+    except ValueError:
+        intensity = 255.0
+        
+    if intensity > 0.0 and (tint_red != 1.0 or tint_green != 1.0 or tint_blue != 1.0 or tint_alpha != 1.0):
+        # Only tint if the color provided is not ffffffff, because that equals no tint
+        
+        pixels = img.load()
+        if intensity == 255.0:
+            for y in xrange(img.size[1]):
+                for x in xrange(img.size[0]):
+                    data = pixels[x, y]
+                    pixels[x, y] = (
+                        int(float(data[0]) * tint_red),
+                        int(float(data[1]) * tint_green),
+                        int(float(data[2]) * tint_blue),
+                        int(float(data[3]) * tint_alpha),
+                    )
+        else:
+            intensity = intensity / 255.0
+            intensity_inv = 1 - intensity
+            tint_red *= intensity
+            tint_green *= intensity
+            tint_blue *= intensity
+            tint_alpha *= intensity
+            for y in xrange(img.size[1]):
+                for x in xrange(img.size[0]):
+                    data = pixels[x, y]
+                    pixels[x, y] = (
+                        int(float(data[0]) * intensity_inv + float(data[0]) * tint_red),
+                        int(float(data[1]) * intensity_inv + float(data[1]) * tint_green),
+                        int(float(data[2]) * intensity_inv + float(data[2]) * tint_blue),
+                        int(float(data[3]) * intensity_inv + float(data[3]) * tint_alpha),
+                    )
+
 
 def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None):
     if overlay_path is None:
@@ -42,62 +106,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None):
         ow, oh = overlay.size
 
     if overlay_tint:
-        
-        if overlay.mode != "RGBA":
-            overlay = img.convert("RGBA")
-        
-        try:
-            tint_red = float(int("0x%s" % overlay_tint[0:2], 16)) / 255.0
-        except ValueError:
-            tint_red = 255.0
-         
-        try:
-            tint_green = float(int("0x%s" % overlay_tint[2:4], 16)) / 255.0
-        except ValueError:
-            tint_green = 255.0
-         
-        try:
-            tint_blue = float(int("0x%s" % overlay_tint[4:6], 16)) / 255.0
-        except ValueError:
-            tint_blue = 255.0
-         
-        try:
-            tint_alpha = float(int("0x%s" % overlay_tint[6:8], 16)) / 255.0
-        except ValueError:
-            tint_alpha = 255.0
-         
-        try:
-            intensity = float(int("0x%s" % overlay_tint[8:10], 16))
-        except ValueError:
-            intensity = 255.0
-        
-        pixels = overlay.load()
-        if intensity == 255.0:
-            for y in xrange(oh):
-                for x in xrange(ow):
-                    data = pixels[x, y]
-                    pixels[x, y] = (
-                        int(float(data[0]) * tint_red),
-                        int(float(data[1]) * tint_green),
-                        int(float(data[2]) * tint_blue),
-                        int(float(data[3]) * tint_alpha),
-                    )
-        else:
-            intensity = intensity / 255.0
-            intensity_inv = 1 - intensity
-            tint_red *= intensity
-            tint_green *= intensity
-            tint_blue *= intensity
-            tint_alpha *= intensity
-            for y in xrange(oh):
-                for x in xrange(ow):
-                    data = pixels[x, y]
-                    pixels[x, y] = (
-                        int(float(data[0]) * intensity_inv + float(data[0]) * tint_red),
-                        int(float(data[1]) * intensity_inv + float(data[1]) * tint_green),
-                        int(float(data[2]) * intensity_inv + float(data[2]) * tint_blue),
-                        int(float(data[3]) * intensity_inv + float(data[3]) * tint_alpha),
-                    )    
+        do_tint(overlay, overlay_tint)
         
 
     img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
@@ -191,7 +200,7 @@ def do_background(img, background):
 
 
 
-def scaleAndCrop(data, width, height, force=True, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
+def scaleAndCrop(data, width, height, force=True, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None, tint=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -238,6 +247,7 @@ def scaleAndCrop(data, width, height, force=True, overlays=(), overlay_sources=(
         img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     tmp = StringIO()
+    do_tint(img, tint)
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)
     do_mask(img, mask)
@@ -252,7 +262,7 @@ def scaleAndCrop(data, width, height, force=True, overlays=(), overlay_sources=(
     return output_data
 
 
-def scale(data, width, height, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None):
+def scale(data, width, height, overlays=(), overlay_sources=(), overlay_tints=(), mask=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None, tint=None):
     """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
 
     max_width = width
@@ -276,6 +286,7 @@ def scale(data, width, height, overlays=(), overlay_sources=(), overlay_tints=()
     img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     tmp = StringIO()
+    do_tint(img, tint)
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)
     do_mask(img, mask)

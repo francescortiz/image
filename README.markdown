@@ -6,9 +6,6 @@
     Tints the image. Works equal to overlays.
     See below.
 
-- support for multiple overlays:
-    See below.
-
 **May 2012**
 
 - parameter "overlay_source=media":

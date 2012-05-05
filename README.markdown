@@ -47,8 +47,9 @@ Significant update: now you have to {% load img %} instead of {% load image %}
 
 
 ## Introduction
+
 I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images. Also, many thumbnailers forget about videos.
-This is why I created my own image resizing library for django.
+This is why I created this image resizing library for django, in which you set the center of attention of an image, and cropping is done automatically keeping the center of attention as close to the center of the image as possible.
 
 ## settings variables
 
@@ -232,4 +233,12 @@ Sample template:
     <img src="{% image test.video 'width=150&height=150&format=PNG' %}"/>
     <img src="{% image path_variable 'width=150&height=150&mode=scale&static=true' %}"/>
     <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&overlay=img/overlay.png' %}"/>
+
+## TODO
+
+* Remove the need to specify with and height for images beeing manipulated. Let the system work with the original image size.
+* Add the posibility to prevent upscaling.
+* Make it possible to set the size of the center of attention, in order to be able to make crops that only show that area.
+
+
 

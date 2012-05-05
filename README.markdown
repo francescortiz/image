@@ -8,7 +8,7 @@ This is why I created this image resizing library for django, in which you set t
 
 Appart from that, I keep adding the functionalities that I need as I come into new projects. Thanks to this, you can see features like **masking, multiple overlays, tint, fill color** or **background color**.
 
-On a more technical side, another feature of image is that **it does not use presets**. You just set the parameters where you want to use on each place, allowing you to quickly implement it and to easily integrate image with other code. For server security and stability, it relays on tokens and disk cache to keep the server in peace. If you publish this disk cache through **mod_rewrite** or equivalents, you can even skip django from get image requests.
+On a more technical side, another feature of image is that **it does not use presets**. You just set the parameters where you want to use on each place, allowing you to quickly implement it and to easily integrate image with other code. For server security and stability, it relays on tokens and disk cache to keep the server in peace. If you publish this disk cache through **mod_rewrite** or equivalents, you can even skip django from getting image requests.
 
 ### What's new
 

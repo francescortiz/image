@@ -1,3 +1,15 @@
+## Introduction
+
+I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images, so, if there is a change in the design, you have to do all the crops again.
+
+Also, many thumbnailers forget about videos.
+
+This is why I created this image resizing library for django, in which you set the center of attention of an image, and cropping is done automatically keeping the center of attention as close to the center of the image as possible. Thanks to this, when people faces or the significant element of a picture are not centered, you can relay on automatic cropping confident that those items will be respected.
+
+Appart from that, I keep adding the functionalities that I need as I come into new projects. Thanks to this, you can see features like masking, multiple overlays, tint, fill color or background color.
+
+On a more technical side, another feature of image is that it does not use presets. You just set the parameters where you want to use on each place, allowing you to quickly implement it and to easily integrate image with other code. For server security and stability, it relays on tokens and disk cache to keep the server in peace. If you publish this disk cache through mod_rewrite or equivalents, you can even skip django from get image requests.
+
 ### What's new
 
 **May 2012**
@@ -45,11 +57,6 @@ Show error images instead of raising exceptions.
 
 Significant update: now you have to {% load img %} instead of {% load image %}
 
-
-## Introduction
-
-I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images. Also, many thumbnailers forget about videos.
-This is why I created this image resizing library for django, in which you set the center of attention of an image, and cropping is done automatically keeping the center of attention as close to the center of the image as possible.
 
 ## settings variables
 

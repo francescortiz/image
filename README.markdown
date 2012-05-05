@@ -2,6 +2,15 @@
 
 **May 2012**
 
+- parameter "tint=RRGGBBAA" or  "tint=RRGGBBAAII":
+    Tints the image. Works equal to overlays.
+    See below.
+
+- support for multiple overlays:
+    See below.
+
+**May 2012**
+
 - parameter "overlay_source=media":
     looks for overlay image in MEDIA_ROOT instead of STATIC_ROOT
 
@@ -105,13 +114,15 @@ It provides two URLs:
 ## Overlays
 You can have multiple overlays, each one with its overlay_source and its overlay_tint.
 
-### overlay_tint=RRGGBBAA or overlay_tint=RRGGBBAAII
+### overlay_tint=RRGGBBAAII
 
 II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.
 
-If AA smaller than ff, the layer will become transparent. You cannot make the layer transparent without changing its color. Open an issue if you have this need.
+AA and II are optional.
 
-Accepts value None (overlay_tint=None)
+If AA smaller than ff, the layer will become transparent.
+
+Accepts value None (overlay_tint=None).
 
 ### overlay_source=media/static
 
@@ -150,7 +161,7 @@ Parameters are supplied in query string format.
 * **mode**: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.
 * **overlay** (multiple values accepted): and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
 * **overlay_source=media/static** (multiple values accepted): tells where to look for the overlay, either MEDIA_ROOT or STATIC_ROOT.
-* **overlay_tint=RRGGBBAA overlay_tint=RRGGBBAAII** (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.
+* **overlay_tint=RRGGBB overlay_tint=RRGGBBAA overlay_tint=RRGGBBAAII** (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.
 * **mask**: a mask image. the mask will be resized to the rendered image size. Mask search path is STATIC_ROOT. **If you set a mask, format switches automatically to PNG**
 * **static**: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.
 * **format**: one of JPG, PNG, etc.
@@ -158,6 +169,7 @@ Parameters are supplied in query string format.
 * **autogen**: if set, the image will be pregenerated, allowing external linking (newsletters, etc).
 * **background=RRGGBBAA**: if set, background color to apply to the image (only makes sense on transparent images).
 * **fill=RRGGBBAA**: forces the size of the generated image to be the request width and height. Unless "mode" is set to "scale", it behaves exactly as "background=RRGGBBAA".
+* **tint=RRGGBB tint=RRGGBBAA tint=RRGGBBAAII**: tints the image. Works like overlay_tint.
 
 
 ### Other parameters

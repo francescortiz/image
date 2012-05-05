@@ -46,47 +46,59 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None):
         if overlay.mode != "RGBA":
             overlay = img.convert("RGBA")
         
-        tint_color = (
-            float(int("0x%s" % overlay_tint[0:2], 16)) / 255.0,
-            float(int("0x%s" % overlay_tint[2:4], 16)) / 255.0,
-            float(int("0x%s" % overlay_tint[4:6], 16)) / 255.0,
-            float(int("0x%s" % overlay_tint[6:8], 16)) / 255.0,
-        )
+        try:
+            tint_red = float(int("0x%s" % overlay_tint[0:2], 16)) / 255.0
+        except ValueError:
+            tint_red = 255.0
+         
+        try:
+            tint_green = float(int("0x%s" % overlay_tint[2:4], 16)) / 255.0
+        except ValueError:
+            tint_green = 255.0
+         
+        try:
+            tint_blue = float(int("0x%s" % overlay_tint[4:6], 16)) / 255.0
+        except ValueError:
+            tint_blue = 255.0
+         
+        try:
+            tint_alpha = float(int("0x%s" % overlay_tint[6:8], 16)) / 255.0
+        except ValueError:
+            tint_alpha = 255.0
+         
         try:
             intensity = float(int("0x%s" % overlay_tint[8:10], 16))
         except ValueError:
             intensity = 255.0
         
-        img_data = overlay.getdata()
-        new_data = []
+        pixels = overlay.load()
         if intensity == 255.0:
-            for data in img_data:
-                data = (
-                    int(float(data[0]) * tint_color[0]),
-                    int(float(data[1]) * tint_color[1]),
-                    int(float(data[2]) * tint_color[2]),
-                    int(float(data[3]) * tint_color[3]),
-                )
-                new_data.append(data)
+            for y in xrange(oh):
+                for x in xrange(ow):
+                    data = pixels[x, y]
+                    pixels[x, y] = (
+                        int(float(data[0]) * tint_red),
+                        int(float(data[1]) * tint_green),
+                        int(float(data[2]) * tint_blue),
+                        int(float(data[3]) * tint_alpha),
+                    )
         else:
             intensity = intensity / 255.0
             intensity_inv = 1 - intensity
-            tint_color = (
-                tint_color[0] * intensity,
-                tint_color[1] * intensity,
-                tint_color[2] * intensity,
-                tint_color[3] * intensity,
-            )
-            for data in img_data:
-                data = (
-                    int(float(data[0]) * intensity_inv + float(data[0]) * tint_color[0]),
-                    int(float(data[1]) * intensity_inv + float(data[1]) * tint_color[1]),
-                    int(float(data[2]) * intensity_inv + float(data[2]) * tint_color[2]),
-                    int(float(data[3]) * intensity_inv + float(data[3]) * tint_color[3]),
-                )
-                new_data.append(data)
-            
-        overlay.putdata(tuple(new_data))
+            tint_red *= intensity
+            tint_green *= intensity
+            tint_blue *= intensity
+            tint_alpha *= intensity
+            for y in xrange(oh):
+                for x in xrange(ow):
+                    data = pixels[x, y]
+                    pixels[x, y] = (
+                        int(float(data[0]) * intensity_inv + float(data[0]) * tint_red),
+                        int(float(data[1]) * intensity_inv + float(data[1]) * tint_green),
+                        int(float(data[2]) * intensity_inv + float(data[2]) * tint_blue),
+                        int(float(data[3]) * intensity_inv + float(data[3]) * tint_alpha),
+                    )    
+        
 
     img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
 

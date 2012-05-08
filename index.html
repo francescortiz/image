@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Image by francescortiz</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Image</h1>
+        <h2>Django application that provides cropping, resizing, thumbnailing, overlays, tint and mask for images and videos with the ability to set the center of attention in order to have automatic perfect cropping.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/francescortiz/image/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/francescortiz/image/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/francescortiz/image" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h2>Introduction</h2>
+
+<p>I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images and, if there is a change in the design, you have to do all the crops again.</p>
+
+<p>Also, many thumbnailers forget about videos.</p>
+
+<p>This is why I created this image resizing library for django, in which you set the center of attention of an image (or video) and cropping is done <strong>automatically keeping the center of attention</strong> as close to the center of the image as possible. Thanks to this, when people's faces or the significant element of a picture are not centered, you can relay on automatic cropping confident that those items will be respected.</p>
+
+<p>Appart from that, I keep adding the functionalities that I need as I come into new projects. Thanks to this, you can see features like <strong>masking, multiple overlays, tint, fill color</strong> or <strong>background color</strong>.</p>
+
+<p>On a more technical side, another feature of image is that <strong>it does not use presets</strong>. You just set the parameters that you want to use on each place, allowing you to quickly implement it and to easily integrate image with other code. For server security and stability, it relays on tokens and disk cache to keep the server in peace. If you publish this disk cache through <strong>mod_rewrite</strong> or equivalents, you can even skip django from getting image requests.</p>
+
+<h3>What's new</h3>
+
+<p><strong>May 2012</strong></p>
+
+<ul>
+<li>parameter "tint=RRGGBBAA" or  "tint=RRGGBBAAII":
+Tints the image. Works equal to overlays.
+See below.</li>
+</ul><p><strong>May 2012</strong></p>
+
+<ul>
+<li><p>parameter "overlay_source=media":
+looks for overlay image in MEDIA_ROOT instead of STATIC_ROOT</p></li>
+<li><p>parameter "overlay_tint=RRGGBBAA" or  "overlay_tint=RRGGBBAAII":
+Tints the overlay.
+See below.</p></li>
+<li><p>support for multiple overlays:
+See below.</p></li>
+</ul><p><strong>April 2012</strong></p>
+
+<ul>
+<li><p>make it compatible with django 1.4</p></li>
+<li><p>make it compatible with django-reversion.</p></li>
+<li><p>parameter "autogen=true":
+Add support for precreation of images.
+Allows external linking, good for newsletters and others</p></li>
+<li><p>parameter "background=RRGGBBAA":
+Allow to set background color to an RGBA hex value.
+Applied before mask and overlay.</p></li>
+<li><p>parameter "fill=RRGGBBAA":
+When using "mode=scale", allow to force size of output image
+to target with and height.
+You have to pass and RGBA hex value that will be set as background color.
+Applied before mask and overlay.</p></li>
+</ul><p><strong>December 2011</strong></p>
+
+<p>Masking, working with static files, possiblity of telling format and quality.
+Show error images instead of raising exceptions.</p>
+
+<p>Significant update: now you have to {% load img %} instead of {% load image %}</p>
+
+<h2>settings variables</h2>
+
+<h3>Context Processors</h3>
+
+<p>'django.core.context_processors.request' is mandatory because the image tag uses sessions.</p>
+
+<h3>Custom settings</h3>
+
+<ul>
+<li><p><strong>IMAGE_CACHE_ROOT</strong>: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.</p></li>
+<li><p><strong>IMAGE_DEFAULT_FORMAT</strong>: (default='JPEG') It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.</p></li>
+<li><p><strong>IMAGE_DEFAULT_QUALITY</strong>: (default=85) It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.</p></li>
+<li><p><strong>IMAGE_FONT_FILE</strong>: (default=[image package path]/FreeFont.ttf) The font file to use for error messages.</p></li>
+<li><p><strong>IMAGE_FONT_LINE_HEIGHT</strong>: (default=.7) A base 1 percentage (1 equals 100%) to set line height for the font.</p></li>
+<li><p><strong>IMAGE_FONT_BACKGROUND</strong>: ( default=(255,255,255,255) ) Background color for errors. RGBA format</p></li>
+<li><p><strong>IMAGE_FONT_LINE_HEIGHT</strong>: ( default=(0,0,0,255) ) Foreground color for errors. RGBA format</p></li>
+<li><p><strong>IMAGE_ERROR_NOT_FOUND</strong>: ( default="Image not found" ) Text to show when an image is not found.</p></li>
+<li><p><strong>IMAGE_ERROR_NOT_VALID</strong>: ( default="Image not valid" ) Text to show when an image is not valid.</p></li>
+<li><p><strong>IMAGE_ERROR_VIDEO_NOT_FOUND</strong>: ( default="Video not found" ) Text to show when a video is not found.</p></li>
+<li><p><strong>IMAGE_ERROR_FFMPEG</strong>: ( default="Video error" ) Text to show when ffmpeg fails.</p></li>
+<li><p><strong>IMAGE_WRONG_REQUEST</strong>: (default="Wrong request" ) Text to show when the request is wrong</p></li>
+</ul><h3>Dependency on django settings</h3>
+
+<ul>
+<li><p><strong>STATIC_ROOT</strong>: Only if you use overlay or mask.</p></li>
+<li><p><strong>FILE_UPLOAD_TEMP_DIR</strong>: Used to store temporary images when working with videos.</p></li>
+</ul><h2>Custom fields</h2>
+
+<p>It adds two custom fields you can use with your models:</p>
+
+<ul>
+<li>
+<strong>ImageCenterField</strong>: you only have to provide the <strong>image_field</strong> argument. It has to be the ImageField or VideoField it references. <strong>It also provides thumbnail preview in the admin section</strong> when in edit mode.</li>
+<li>
+<strong>VideoField</strong>: It is just a FileField with another signature.</li>
+</ul><h2>Template tags</h2>
+
+<p>You have to {% load img %} in your templates:</p>
+
+<h3>{% image [source] [parameters] %}</h3>
+
+<p>Returns an url that points to the thumbnail.</p>
+
+<ul>
+<li>
+<strong>source</strong>: Either a path or an ImageField or VideoField instance. It doesn't necessarely needs to have a related ImageCenterField.</li>
+<li>
+<strong>parameters</strong>: string of a list of parameters in querystring format. See parameters section</li>
+</ul><h2>URLs</h2>
+
+<p>It provides two URLs:</p>
+
+<ul>
+<li>/image/(?P&lt;<strong>path</strong>&gt;)/(?P&lt;<strong>parameters</strong>&gt;): It is this view that actually does the work. <strong>path</strong> will be searched in the directory settings.MEDIA_ROOT. See below for <strong>parameters</strong>.</li>
+<li>/image-crosshair: Just a base64 encoded png to use in the admin section.</li>
+</ul><h2>Overlays</h2>
+
+<p>You can have multiple overlays, each one with its overlay_source and its overlay_tint.</p>
+
+<h3>overlay_tint=RRGGBBAAII</h3>
+
+<p>II stands for Intensity. Values from 00 to ff. Ammount of tint to apply.</p>
+
+<p>AA and II are optional.</p>
+
+<p>If AA smaller than ff, the layer will become transparent.</p>
+
+<p>Accepts value None (overlay_tint=None).</p>
+
+<h3>overlay_source=media/static</h3>
+
+<p>Where to look for overlay, either MEDIA_ROOT or STATIC_ROOT</p>
+
+<h3>Examples:</h3>
+
+<p>overlay=test/img0.png&amp;overlay_tint=<strong>ff0000ff</strong>&amp;overlay=test/img1.png&amp;overlay_tint=<strong>00ff0077</strong></p>
+
+<p>overlay=test/img0.png&amp;overlay_tint=<strong>None</strong>&amp;overlay=test/img1.png&amp;overlay_tint=<strong>00ff0077aa</strong></p>
+
+<p>overlay=test/img0.png&amp;overlay_source=<strong>media</strong>&amp;overlay=test/img1.png&amp;overlay_source=<strong>static</strong></p>
+
+<h2>Caution with overlays</h2>
+
+<p><strong>If you use overlay_tint or overlay_source, the position in which they appear does not matter</strong>.</p>
+
+<p>The order of appearances is used to associate overlays with overlay_tints and overlay_sources. In other words, the first appearance of overlay_tint is associated with the first overlay. The same applies for overlay_source.</p>
+
+<h3>These two are equivalent:</h3>
+
+<p>overlay=test/img0.png&amp;<strong>overlay_tint=ff0000ff</strong>&amp;overlay=test/img1.png</p>
+
+<p>overlay=test/img0.png&amp;overlay=test/img1.png<strong>&amp;overlay_tint=ff0000ff</strong></p>
+
+<h3>To tint only the second overlay, you have to do this:</h3>
+
+<p>overlay=test/img0.png<strong>&amp;overlay_tint=None</strong>&amp;overlay=test/img1.png<strong>&amp;overlay_tint=ff0000ff</strong></p>
+
+<h2>Parameters</h2>
+
+<p>Parameters are supplied in query string format.</p>
+
+<h3>Common Parameters</h3>
+
+<ul>
+<li>
+<strong>width</strong>: [required] target width. Set it to a big number if you are scaling to fit vertically.</li>
+<li>
+<strong>height</strong>: [required] target height. Set it to a big number if you are scaling to fit horizontally.</li>
+<li>
+<strong>mode</strong>: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.</li>
+<li>
+<strong>overlay</strong> (multiple values accepted): and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.</li>
+<li>
+<strong>overlay_source=media/static</strong> (multiple values accepted): tells where to look for the overlay, either MEDIA_ROOT or STATIC_ROOT.</li>
+<li>
+<strong>overlay_tint=RRGGBB overlay_tint=RRGGBBAA overlay_tint=RRGGBBAAII</strong> (multiple values accepted): tints the overlay. II stands for intensity. AA different to ff makes the overlay transparent.</li>
+<li>
+<strong>mask</strong>: a mask image. the mask will be resized to the rendered image size. Mask search path is STATIC_ROOT. <strong>If you set a mask, format switches automatically to PNG</strong>
+</li>
+<li>
+<strong>static</strong>: tells image to look for our image in STATIC_ROOT instead of MEDIA_ROOT.</li>
+<li>
+<strong>format</strong>: one of JPG, PNG, etc.</li>
+<li>
+<strong>quality</strong>: quality to use for "format"</li>
+<li>
+<strong>autogen</strong>: if set, the image will be pregenerated, allowing external linking (newsletters, etc).</li>
+<li>
+<strong>background=RRGGBBAA</strong>: if set, background color to apply to the image (only makes sense on transparent images).</li>
+<li>
+<strong>fill=RRGGBBAA</strong>: forces the size of the generated image to be the request width and height. Unless "mode" is set to "scale", it behaves exactly as "background=RRGGBBAA".</li>
+<li>
+<strong>tint=RRGGBB tint=RRGGBBAA tint=RRGGBBAAII</strong>: tints the image. Works like overlay_tint.</li>
+</ul><h3>Other parameters</h3>
+
+<ul>
+<li>
+<strong>url</strong>: make a thumbnail of the given url. If url is given, [source] is ignored.</li>
+</ul><p>These next two parameters don't make sense if you are thumbnailing an ImageField or VideoField, because if so image takes care of them automatically.</p>
+
+<ul>
+<li>
+<strong>video</strong>: If the key exists we are going to create a thumbnail of a video.</li>
+<li>
+<strong>center</strong>: center of attention. You have to provide X and Y as base 1 percentages. For example, "center=0.5,0.5" will set the center of attention to the center of the image.</li>
+</ul><h2>Admin Section</h2>
+
+<p>This is how ImageCenter looks in the admin section when it is editable. <strong>Just click on the the center of attention of the image and save.</strong></p>
+
+<p><img src="https://github.com/francescortiz/image/wiki/admin_section.png" alt="Screenshot"></p>
+
+<h2>Background features</h2>
+
+<ul>
+<li>Thumbnails are automatically removed when database entries are removed.</li>
+<li>It does not use any templates or resources. Just setup urls.py and done.</li>
+<li>South integration: custom fields are understood by south.</li>
+<li>Unless "autogen=true" is set, it prevents external linking.</li>
+<li>If you set IMAGE_CACHE_ROOT to a directory that is in your public http directory, you can use mod_rewrite or equivalents to have the HTTP server serve the resized images directly.</li>
+</ul><h2>Dependencies</h2>
+
+<ul>
+<li>
+<strong>PIL</strong>: python imaging library is used for image manipualtion. If you want to handle transparency you need at least PIL 1.1.7</li>
+<li>
+<strong>ffmpeg</strong>: only if you want video thumbnails.</li>
+</ul><h2>Known issues</h2>
+
+<p>I develop as I need to. Open an issue if you need to fix something or demand any other feature.</p>
+
+<ul>
+<li>help_text kwarg does not work for ImageCenterField</li>
+</ul><h2>Examples</h2>
+
+<p>Sample model:</p>
+
+<pre><code>class Test(models.Model):
+
+    image = ImageField(upload_to="test")
+    image_center = ImageCenterField(image_field=image)
+    video = VideoField(upload_to="test")
+    video_center = ImageCenterField(image_field=video)
+</code></pre>
+
+<p>Sample urls.py:</p>
+
+<pre><code># -*- coding: UTF-8 -*-
+from django.conf.urls.defaults import *
+from django.contrib import admin
+admin.autodiscover()
+
+urlpatterns = patterns('',
+    (r'^admin/', include(admin.site.urls)),
+    (r'^', include('image.urls')),
+)
+</code></pre>
+
+<p>Sample template:</p>
+
+<pre><code>{% load img %}
+&lt;img src="{% image test.image 'width=150&amp;height=150&amp;format=JPEG&amp;quality=95' %}"/&gt;
+&lt;img src="{% image test.video 'width=150&amp;height=150&amp;format=PNG' %}"/&gt;
+&lt;img src="{% image path_variable 'width=150&amp;height=150&amp;mode=scale&amp;static=true' %}"/&gt;
+&lt;img src="{% image '' 'url=http://www.example.com/img.jpg&amp;width=150&amp;height=150&amp;mode=scale&amp;overlay=img/overlay.png' %}"/&gt;
+</code></pre>
+
+<h2>TODO</h2>
+
+<ul>
+<li>Remove the need to specify with and height for images beeing manipulated. Let the system work with the original image size.</li>
+<li>Add the posibility to prevent upscaling.</li>
+<li>Make it possible to set the size of the center of attention, in order to be able to make crops that only show that area.</li>
+</ul>
+      </section>
+    </div>
+
+    
+  </body>
+</html>

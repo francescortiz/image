@@ -28,7 +28,8 @@ def removePermissions(filePath):
 
 
 def removeCache(image_path):
-    removeDir(settings.IMAGE_CACHE_ROOT + "/" + image_path)
+    if image_path:
+        removeDir(settings.IMAGE_CACHE_ROOT + "/" + image_path)
 
 
 def prepareImageCacheCleanup(sender, instance=None, **kwargs):

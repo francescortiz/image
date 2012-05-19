@@ -22,22 +22,22 @@ def do_tint(img, tint):
     try:
         tint_red = float(int("0x%s" % tint[0:2], 16)) / 255.0
     except ValueError:
-        tint_red = 255.0
+        tint_red = 1.0
      
     try:
         tint_green = float(int("0x%s" % tint[2:4], 16)) / 255.0
     except ValueError:
-        tint_green = 255.0
+        tint_green = 1.0
      
     try:
         tint_blue = float(int("0x%s" % tint[4:6], 16)) / 255.0
     except ValueError:
-        tint_blue = 255.0
+        tint_blue = 1.0
      
     try:
         tint_alpha = float(int("0x%s" % tint[6:8], 16)) / 255.0
     except ValueError:
-        tint_alpha = 255.0
+        tint_alpha = 1.0
  
     try:
         intensity = float(int("0x%s" % tint[8:10], 16))
@@ -81,8 +81,8 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None):
         return img
 
     overlay_path = os.path.normpath(overlay_path)
-
-    if overlay_source is 'media':
+    
+    if overlay_source == 'media':
         overlay = pil.open(settings.MEDIA_ROOT + "/" + overlay_path)
     else:
         overlay = pil.open(settings.STATIC_ROOT + "/" + overlay_path)

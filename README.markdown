@@ -1,3 +1,17 @@
+## Current development
+
+Currently I am working on an image resizing algorithm. This is the most significant result of the first quick tests I run:
+
+Orignal image
+
+![Original image](https://github.com/francescortiz/image/wiki/rings_sm_orig.gif)
+
+Upscaled image
+
+![Upscaled image](https://github.com/francescortiz/image/wiki/test-superbig.png)
+
+There is still a lot of work and research to do. When I am done with this I am going to rewrite the project from scratch giving it a plugin based arquitecture.
+
 ## Introduction
 
 I've seen some plugins that allow you to set the crop images by dragging and resizing a selection area over the original image. The problem with this method is that you need to know cropped sizes when you upload the images and, if there is a change in the design, you have to do all the crops again.

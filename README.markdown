@@ -4,11 +4,11 @@ Currently I am working on an image resizing algorithm. This is the most signific
 
 Orignal image
 
-![Original image](https://github.com/francescortiz/image/wiki/rings_sm_orig.gif)
+![Original image](https://github.com/francescortiz/image/raw/master/rings_sm_orig.gif)
 
 Upscaled image
 
-![Upscaled image](https://github.com/francescortiz/image/wiki/test-superbig.png)
+![Upscaled image](https://github.com/francescortiz/image/raw/master/test-superbig.png)
 
 There is still a lot of work and research to do. When I am done with this I am going to rewrite the project from scratch giving it a plugin based arquitecture.
 

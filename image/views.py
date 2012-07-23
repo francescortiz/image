@@ -21,7 +21,7 @@ IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
 def image(request, path, token, autogen=False):
 
     is_admin = False
-    if ("is_admin=true" in token and request and request.user.has_perm('admin')) or autogen:
+    if ("is_admin=true" in token and request and request.user.is_staff) or autogen:
         parameters = token
         is_admin = True
         if autogen:

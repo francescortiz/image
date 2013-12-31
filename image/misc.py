@@ -6,7 +6,7 @@ from image.utils import image_create_token
 
 def get_image_url(image, parameters):
     if 'autogen=true' in parameters:
-        print "CACA " + image_view(None, str(image), parameters, True)
+        image_view(None, str(image), parameters, True)
     
     return reverse(
         'image.views.image',

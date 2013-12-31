@@ -47,6 +47,7 @@ class ImageCenterField(models.Field):
         if image_field is not None:
             if not isinstance(image_field, models.ImageField) and  not isinstance(image_field, VideoField):
                 raise ValueError("image_field value must be an ImageField or VideoField instance")
+        kwargs["default"] = ".5,.5"
         self.image_field = image_field
         super(ImageCenterField, self).__init__(*args, **kwargs)
 
@@ -69,7 +70,10 @@ class ImageCenterField(models.Field):
 
     # Esta función es llamada al escribir un valor en la base de datos
     def get_db_prep_value(self, value, connection=None, prepared=False):
-        return str(value.x) + "," + str(value.y)
+        try:
+            return str(value.x) + "," + str(value.y)
+        except AttributeError:
+            return str(value)
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)

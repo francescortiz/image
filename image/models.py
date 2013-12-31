@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.db.models.fields.files import FileField
 from django.conf import settings
 import os
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 
 def removeDir(dirName):
@@ -34,15 +34,19 @@ def removeCache(image_path):
 
 def prepareImageCacheCleanup(sender, instance=None, **kwargs):
     if instance is None:
-        return;
-    instance.old_image_fields = {}
-    try:
-        old_instance = sender.objects.get(pk=instance.pk)
-    except ObjectDoesNotExist:
         return
+    instance.old_image_fields = {}
+
+    old_instance = None
 
     for field in instance._meta.fields:
         if isinstance(field, FileField):
+            if not old_instance:
+                try:
+                    old_instance = sender.objects.get(pk=instance.pk)
+                except (ObjectDoesNotExist, MultipleObjectsReturned):
+                    return
+
             instance.old_image_fields[field.attname] = field.value_to_string(old_instance)
 
 
@@ -68,9 +72,12 @@ post_save.connect(clearPreparedImageCacheCleanup)
 post_delete.connect(clearImageCache)
 
 #reversion compatibility
-try:
-    from reversion.models import pre_revision_commit, post_revision_commit
-    pre_revision_commit.connect(prepareImageCacheCleanup)
-    post_revision_commit.connect(clearPreparedImageCacheCleanup)
-except ImportError:
-    pass
+if 'reversion' in settings.INSTALLED_APPS:
+    try:
+        from reversion.models import pre_revision_commit, post_revision_commit
+
+        pre_revision_commit.connect(prepareImageCacheCleanup)
+        post_revision_commit.connect(clearPreparedImageCacheCleanup)
+    except ImportError:
+        pass
+

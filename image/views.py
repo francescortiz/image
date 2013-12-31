@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from django.conf import settings
 from django.http import HttpResponse, QueryDict
+from django.http.response import Http404
 from django.views.decorators.cache import cache_page
 from django.utils.http import urlquote
 from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
@@ -12,6 +13,7 @@ from encodings.base64_codec import base64_decode
 import urllib
 from django.utils.encoding import smart_unicode
 from image.image_error import image_text
+import traceback
 
 IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
 IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
@@ -21,7 +23,7 @@ IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
 def image(request, path, token, autogen=False):
 
     is_admin = False
-    if ("is_admin=true" in token and request and request.user.is_staff) or autogen:
+    if ("is_admin=true" in token and request and request.user.has_perm('admin')) or autogen:
         parameters = token
         is_admin = True
         if autogen:
@@ -46,7 +48,10 @@ def image(request, path, token, autogen=False):
         if autogen:
             return 'Already generated'
         
-        f = open(cached_image_file, "r")
+        try:
+            f = open(cached_image_file, "r")
+        except IOError:
+            raise Http404()
         response.write(f.read())
         f.close()
 
@@ -67,6 +72,7 @@ def image(request, path, token, autogen=False):
     format = qs.get('format', IMAGE_DEFAULT_FORMAT)
     quality = int(qs.get('quality', IMAGE_DEFAULT_QUALITY))
     mask = qs.get('mask', None)
+    mask_source = qs.get('mask_source', None)
 
     if mask is not None:
         format = "PNG"
@@ -81,9 +87,15 @@ def image(request, path, token, autogen=False):
     overlays = qs.getlist('overlay')
     overlay_sources = qs.getlist('overlay_source')
     overlay_tints = qs.getlist('overlay_tint')
+    overlay_sizes = qs.getlist('overlay_size')
+    overlay_positions = qs.getlist('overlay_position')
 
     width = int(qs.get('width', None))
     height = int(qs.get('height', None))
+    try:
+        padding = float(qs.get('padding',None))
+    except TypeError:
+        padding = 0.0
 
     if "video" in qs:
         data, http_response = generate_thumb(ROOT_DIR + "/" + smart_unicode(path), width=width, height=height)
@@ -100,16 +112,22 @@ def image(request, path, token, autogen=False):
                 f.close()
         except IOError:
             response.status_code = 404
-            data = image_text(IMAGE_ERROR_NOT_FOUND, width, height)
+            #data = image_text(IMAGE_ERROR_NOT_FOUND, width, height)
+            data = ""
 
-    try:
-        if mode == "scale":
-            output_data = scale(data, width, height, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, format=format, quality=quality, fill=fill, background=background, tint=tint)
-        else:
-            output_data = scaleAndCrop(data, width, height, True, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, mask=mask, center=center, format=format, quality=quality, fill=fill, background=background, tint=tint)
-    except IOError:
-        response.status_code = 500
-        output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
+    if data:
+        try:
+            if mode == "scale":
+                output_data = scale(data, width, height, path, padding=padding, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask, mask_source=mask_source, format=format, quality=quality, fill=fill, background=background, tint=tint)
+            else:
+                output_data = scaleAndCrop(data, width, height, path, True, padding=padding, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask, mask_source=mask_source, center=center, format=format, quality=quality, fill=fill, background=background, tint=tint)
+        except IOError:
+            traceback.print_exc()
+            response.status_code = 500
+            #output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
+            output_data = ""
+    else:
+        output_data = data
 
     if response.status_code == 200:
         if not os.path.exists(cached_image_path):

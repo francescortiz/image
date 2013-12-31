@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns
 
 urlpatterns = patterns('image.views',
-    (r'^image/(?P<path>.*)/((?P<token>.*))$', 'image'),
-    (r'^image-crosshair', 'crosshair'),
+    (r'^crosshair$', 'crosshair'),
+    (r'^(?P<path>.*)/((?P<token>.*))$', 'image'),
 )

@@ -2,8 +2,9 @@
 from django.conf import settings
 from django.http import HttpResponse, QueryDict
 from django.http.response import Http404
+from django.utils import timezone
 from django.views.decorators.cache import cache_page
-from django.utils.http import urlquote
+from django.utils.http import urlquote, http_date
 from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
     image_create_token
 from urllib import unquote
@@ -18,6 +19,7 @@ import traceback
 IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
 IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
 IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
+IMAGE_HTTP_CACHE_EXPIRATION = getattr(settings, 'IMAGE_HTTP_CACHE_EXPIRATION', 3600 * 24 * 30)
 
 #@cache_page(60 * 15)
 def image(request, path, token, autogen=False):
@@ -36,12 +38,16 @@ def image(request, path, token, autogen=False):
     cached_image_path = settings.IMAGE_CACHE_ROOT + "/" + path + "/"
     cached_image_file = cached_image_path + token
 
+    now = timezone.now()
+    expire_offset = timezone.timedelta(seconds=IMAGE_HTTP_CACHE_EXPIRATION)
+
     response = HttpResponse()
     response['Content-type'] = 'image/jpeg'
-    response['Expires'] = 'Fri, 09 Dec 2327 08:34:31 GMT'
-    response['Last-Modified'] = 'Fri, 24 Sep 2010 11:36:29 GMT'
+    response['Expires'] = (now + expire_offset).strftime("%a, %d %b %Y %T GMT")
+    response['Last-Modified'] = now.strftime("%a, %d %b %Y %T GMT")
+    response['Cache-Control'] = 'max-age=3600, must-revalidate'
     response.status_code = 200
-    
+
     # If we already have the cache we send it instead of recreating it
     if os.path.exists(smart_unicode(cached_image_file)):
         
@@ -55,6 +61,7 @@ def image(request, path, token, autogen=False):
         response.write(f.read())
         f.close()
 
+        response['Last-Modified'] = http_date(os.path.getmtime(cached_image_file))
         return response
     
     if parameters == token and not is_admin:

@@ -4,6 +4,8 @@ from django import template
 from django.template.defaulttags import register
 from django.core.urlresolvers import reverse
 from django.db.models.fields.files import ImageFieldFile
+import os
+from image.storage import IMAGE_CACHE_STORAGE
 from image.video_field import VideoFieldFile
 from image import views as image_views
 from image.utils import image_create_token
@@ -55,13 +57,15 @@ class ImageNode(template.Node):
             # We want the image to be generated immediately
             image_views.image(None, str(image_field), parameters, True)
 
-        return reverse(
-            'image.views.image',
-            args=(
-                str(image_field),
-                image_tokenize(session, parameters)
-            )
-        )
+        return IMAGE_CACHE_STORAGE.url(os.path.join(unicode(image_field), image_tokenize(session, parameters)))
+
+        # return reverse(
+        #     'image.views.image',
+        #     args=(
+        #         str(image_field),
+        #         image_tokenize(session, parameters)
+        #     )
+        # )
 
 
 @register.tag(name="image")

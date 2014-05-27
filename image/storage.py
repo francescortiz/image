@@ -17,6 +17,8 @@ class ImageCacheStorage(FileSystemStorage):
             location = settings.IMAGE_CACHE_ROOT
         if base_url is None:
             base_url = settings.IMAGE_CACHE_URL
+        if not location:
+            raise ImproperlyConfigured("IMAGE_CACHE_ROOT not defined.")
         super(ImageCacheStorage, self).__init__(location, base_url, *args, **kwargs)
 
     def path(self, name):

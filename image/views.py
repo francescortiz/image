@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from django.core.files.base import ContentFile
 from encodings.base64_codec import base64_decode
 import os
 import urllib
@@ -46,7 +47,7 @@ def image(request, path, token, autogen=False):
             return 'Already generated'
         
         try:
-            f = open(cached_image_file, "r")
+            f = IMAGE_CACHE_STORAGE.open(cached_image_file, "r")
         except IOError:
             raise Http404()
         response.write(f.read())
@@ -123,9 +124,7 @@ def image(request, path, token, autogen=False):
         output_data = data
 
     if response.status_code == 200:
-        f = IMAGE_CACHE_STORAGE.open(cached_image_file, "w")
-        f.write(output_data)
-        f.close()
+        IMAGE_CACHE_STORAGE.save(cached_image_file,  ContentFile(output_data))
         if autogen:
             return 'Generated ' + str(response.status_code)
     else:

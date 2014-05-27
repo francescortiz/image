@@ -10,7 +10,7 @@ def get(key, default):
     return getattr(settings, key, default)
 
 
-IMAGE_CACHE_STORAGE = get('IMAGE_CACHE_STORAGE', None)
+IMAGE_CACHE_STORAGE = get('IMAGE_CACHE_STORAGE', 'image.storage.ImageCacheStorage')
 IMAGE_CACHE_ROOT = get('IMAGE_CACHE_ROOT', None)
 
 # If IMAGE_CACHE_URL differs from the url of the image view then you must always use autogen or have proper rewrite rules on your server

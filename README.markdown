@@ -12,6 +12,20 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.3**
+
+- Added suport for django storages
+- Code cleanup
+- Remove unneded stuff (font file, some functions).
+
+**Version 1.2.1**
+
+- Better cache response headers
+
+**Version 1.2**
+
+- Lots of improvements
+
 **May 2012**
 
 - parameter "tint=RRGGBBAA" or  "tint=RRGGBBAAII":

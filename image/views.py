@@ -1,27 +1,21 @@
 # -*- coding: UTF-8 -*-
-from django.conf import settings
+from encodings.base64_codec import base64_decode
+import os
+import urllib
+import traceback
+
 from django.http import HttpResponse, QueryDict
 from django.http.response import Http404
 from django.utils import timezone
-from django.views.decorators.cache import cache_page
-from django.utils.http import urlquote, http_date
+from django.utils.encoding import smart_unicode
+
+from image.settings import IMAGE_CACHE_HTTP_EXPIRATION, IMAGE_CACHE_ROOT
+from image.storage import IMAGE_CACHE_STORAGE, MEDIA_STORAGE, STATIC_STORAGE
 from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
     image_create_token
-from urllib import unquote
-import os
 from image.videothumbs import generate_thumb
-from encodings.base64_codec import base64_decode
-import urllib
-from django.utils.encoding import smart_unicode
-from image.image_error import image_text
-import traceback
 
-IMAGE_ERROR_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_NOT_FOUND', "Image not found")
-IMAGE_ERROR_NOT_VALID = getattr(settings, 'IMAGE_ERROR_NOT_VALID', "Image not valid")
-IMAGE_WRONG_REQUEST = getattr(settings, 'IMAGE_WRONG_REQUEST', "Wrong request")
-IMAGE_HTTP_CACHE_EXPIRATION = getattr(settings, 'IMAGE_HTTP_CACHE_EXPIRATION', 3600 * 24 * 30)
 
-#@cache_page(60 * 15)
 def image(request, path, token, autogen=False):
 
     is_admin = False
@@ -33,13 +27,10 @@ def image(request, path, token, autogen=False):
     else:
         parameters = request.session.get(token, token)
 
-    path = os.path.normcase(path)
-    
-    cached_image_path = settings.IMAGE_CACHE_ROOT + "/" + path + "/"
-    cached_image_file = cached_image_path + token
+    cached_image_file = os.path.join(path, token)
 
     now = timezone.now()
-    expire_offset = timezone.timedelta(seconds=IMAGE_HTTP_CACHE_EXPIRATION)
+    expire_offset = timezone.timedelta(seconds=IMAGE_CACHE_HTTP_EXPIRATION)
 
     response = HttpResponse()
     response['Content-type'] = 'image/jpeg'
@@ -49,7 +40,7 @@ def image(request, path, token, autogen=False):
     response.status_code = 200
 
     # If we already have the cache we send it instead of recreating it
-    if os.path.exists(smart_unicode(cached_image_file)):
+    if IMAGE_CACHE_STORAGE.exists(cached_image_file):
         
         if autogen:
             return 'Already generated'
@@ -61,7 +52,7 @@ def image(request, path, token, autogen=False):
         response.write(f.read())
         f.close()
 
-        response['Last-Modified'] = http_date(os.path.getmtime(cached_image_file))
+        response['Last-Modified'] = IMAGE_CACHE_STORAGE.modified_time(cached_image_file).strftime("%a, %d %b %Y %T GMT")
         return response
     
     if parameters == token and not is_admin:
@@ -69,12 +60,9 @@ def image(request, path, token, autogen=False):
 
     qs = QueryDict(parameters)
 
-    ROOT_DIR = settings.MEDIA_ROOT
-    try:
-        if qs['static'] == "true":
-            ROOT_DIR = settings.STATIC_ROOT
-    except KeyError:
-        pass
+    file_storage = MEDIA_STORAGE
+    if qs.get('static', '') == "true":
+        file_storage = STATIC_STORAGE
 
     format = qs.get('format', IMAGE_DEFAULT_FORMAT)
     quality = int(qs.get('quality', IMAGE_DEFAULT_QUALITY))
@@ -105,7 +93,7 @@ def image(request, path, token, autogen=False):
         padding = 0.0
 
     if "video" in qs:
-        data, http_response = generate_thumb(ROOT_DIR + "/" + smart_unicode(path), width=width, height=height)
+        data, http_response = generate_thumb(file_storage, smart_unicode(path), width=width, height=height)
         response.status_code = http_response
     else:
         try:
@@ -114,12 +102,11 @@ def image(request, path, token, autogen=False):
                 data = f.read()
                 f.close()
             except KeyError:
-                f = open(ROOT_DIR + "/" + smart_unicode(path), 'r')
+                f = file_storage.open(path)
                 data = f.read()
                 f.close()
         except IOError:
             response.status_code = 404
-            #data = image_text(IMAGE_ERROR_NOT_FOUND, width, height)
             data = ""
 
     if data:
@@ -131,16 +118,12 @@ def image(request, path, token, autogen=False):
         except IOError:
             traceback.print_exc()
             response.status_code = 500
-            #output_data = image_text(IMAGE_ERROR_NOT_VALID, width, height)
             output_data = ""
     else:
         output_data = data
 
     if response.status_code == 200:
-        if not os.path.exists(cached_image_path):
-            os.makedirs(cached_image_path)
-    
-        f = open(cached_image_file, "w")
+        f = IMAGE_CACHE_STORAGE.open(cached_image_file, "w")
         f.write(output_data)
         f.close()
         if autogen:

@@ -1,16 +1,15 @@
-from django.conf import settings
 from PIL import Image as pil
 from cStringIO import StringIO
-import os
 import hashlib
-import numpy as np
-import traceback
-import math
+
+from image import settings
+from image.storage import MEDIA_STORAGE, STATIC_STORAGE
+
 
 IMAGE_DEFAULT_FORMAT = getattr(settings, 'IMAGE_DEFAULT_FORMAT', 'JPEG')
 IMAGE_DEFAULT_QUALITY = getattr(settings, 'IMAGE_DEFAULT_QUALITY', 85)
 
-INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT 
+INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT
 
 
 def power_to_rgb(value):
@@ -55,139 +54,7 @@ def add_rgba_to_pixel(pixel, rgba, x_ammount, x_displacement):
                 pixel[2] * pixel_ammount + rgba[2] * rgba_ammount,
                 pa * pixel_ammount + a * rgba_ammount,
                 )
-        
 
-def real_reduce_x(img, target_width):
-    img_width, img_height = img.size
-    x_pixel_size = float(img_width)/float(target_width);
-    x_pixel_size_inv = float(target_width) / float(img_width);
-    x_displacements = img_width * [0.0];
-    x_ammounts = img_width * [0.0];
-    trespassed_xs = img_width * [0.0];
-    for x in xrange(img_width):
-        target_x = float(x) / x_pixel_size
-        displacement_x = target_x - math.floor(target_x)
-        x_ammount = min(1.0 - displacement_x, x_pixel_size_inv)
-        x_displacements[x] = displacement_x
-        x_ammounts[x] = x_ammount
-        trespassed_xs[x] = x_pixel_size_inv - x_ammount;
-    
-    pixels = img.load()
-    target_pixels = img_height * [None]
-    for y in xrange(img_height):
-        target_pixels[y] = target_width * [(0.0,0.0,0.0,0.0),]
-        for x in xrange(img_width):
-            target_x = int(float(x) / x_pixel_size)
-            target_y = y
-            
-            r, g, b, a = pixels[x, y]
-            r = rgb_to_power(r)
-            g = rgb_to_power(g)
-            b = rgb_to_power(b)
-            a = a / 255.0
-
-            target_pixels[target_y][target_x] = add_rgba_to_pixel(target_pixels[target_y][target_x], (r,g,b,a), x_ammounts[x], x_displacements[x])
-            
-            trespassed_x = trespassed_xs[x];
-            c = 1
-            while trespassed_x > 0.00000001:
-                x_ammount = min(trespassed_x, 1.0)
-                x_displacement = 0
-                
-                target_pixels[target_y][target_x + c] = add_rgba_to_pixel(target_pixels[target_y][target_x + c], (r,g,b,a), x_ammount, x_displacement)
-                
-                trespassed_x -= 1.0
-                c += 1
-    
-    for y in xrange(img_height):
-        for x in xrange(target_width):
-            pixel = target_pixels[y][x]
-            target_pixels[y][x] = (
-                power_to_rgb(pixel[0]),
-                power_to_rgb(pixel[1]),
-                power_to_rgb(pixel[2]),
-                round(pixel[3] * 255.0),
-            )
-    
-    target_image = pil.fromarray(np.asarray(target_pixels).astype('uint8'), 'RGBA')
-    
-    return target_image
-
-
-def real_reduce_y(img, target_height):
-    img_width, img_height = img.size
-    y_pixel_size = float(img_height)/float(target_height)
-    y_pixel_size_inv = float(target_height)/float(img_height)
-    y_displacements = img_height * [0.0];
-    y_ammounts = img_height * [0.0];
-    trespassed_ys = img_height * [0.0];
-    for y in xrange(img_height):
-        target_y = float(y) / y_pixel_size
-        displacement_y = target_y - math.floor(target_y)
-        y_displacements[y] = displacement_y
-        y_ammount = min(1.0 - displacement_y, y_pixel_size_inv)
-        y_ammounts[y] = y_ammount
-        trespassed_ys[y] = y_pixel_size_inv - y_ammount;
-    
-    pixels = img.load()
-    target_pixels = target_height * [None]
-    for target_y in xrange(target_height):
-        target_pixels[target_y] = img_width * [[0.0,0.0,0.0,0.0],]
-    
-    for x in xrange(img_width):
-        for y in xrange(img_height):
-            target_x = x
-            target_y = int(float(y) / y_pixel_size)
-            
-            r, g, b, a = pixels[x, y]
-            r = rgb_to_power(r)
-            g = rgb_to_power(g)
-            b = rgb_to_power(b)
-            a = a / 255.0
-            
-            target_pixels[target_y][target_x] = add_rgba_to_pixel(target_pixels[target_y][target_x], (r,g,b,a), y_ammounts[y], y_displacements[y])
-            
-            trespassed_y = trespassed_ys[y];
-            c = 1
-            while trespassed_y > 0.00000001:
-                y_ammount = min(trespassed_y, 1.0)
-                y_displacement = 0
-                
-                target_pixels[target_y + c][target_x] = add_rgba_to_pixel(target_pixels[target_y + c][target_x], (r,g,b,a), y_ammount, y_displacement)
-                
-                trespassed_y -= 1.0
-                c += 1
-    
-    for y in xrange(target_height):
-        for x in xrange(img_width):
-            pixel = target_pixels[y][x]
-            target_pixels[y][x] = (
-                power_to_rgb(pixel[0]),
-                power_to_rgb(pixel[1]),
-                power_to_rgb(pixel[2]),
-                round(pixel[3] * 255.0),
-            )
-    
-    target_image = pil.fromarray(np.asarray(target_pixels).astype('uint8'), 'RGBA')
-    
-    return target_image
-
-def real_reduce(img, width, height, filepath):
-    
-    internal_cache_copy = "%s/%s_%dx%d" % (INTERNAL_CACHE_ROOT, filepath, width, height)
-    internal_cache_copy_dirname = os.path.dirname(internal_cache_copy)
-    if not os.path.exists(internal_cache_copy):
-        try:
-            img = real_reduce_x(img, width)
-            img = real_reduce_y(img, height)
-            
-            if not os.path.exists(internal_cache_copy_dirname):
-                os.makedirs(internal_cache_copy_dirname)
-            img.save(internal_cache_copy, "PNG")
-        except Exception:
-            traceback.print_exc()
-
-    return pil.open(internal_cache_copy)
 
 def image_create_token(parameters):
     return "image_token_%s" % hashlib.sha1(parameters).hexdigest()
@@ -200,7 +67,7 @@ def resizeScale(img, width, height, filepath):
     while img.size[0] / RATIO > width or img.size[1] / RATIO > height:
         img = img.resize((int(img.size[0]/RATIO), int(img.size[1]/RATIO)), pil.ANTIALIAS)
     """
-    
+
     max_width = width
     max_height = height
     
@@ -214,11 +81,7 @@ def resizeScale(img, width, height, filepath):
         dst_width = dst_height * src_ratio
     
     img_width, img_height = img.size
-    if width < img_width or height < img_height:
-        #img = real_reduce(img, int(dst_width), int(dst_height), filepath)
-        img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
-    else:
-        img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
+    img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
     
     return img
 
@@ -230,7 +93,7 @@ def resizeCrop(img, width, height, center, force):
     while img.size[0] / RATIO > width or img.size[1] / RATIO > height:
         img = img.resize((int(img.size[0]/RATIO), int(img.size[1]/RATIO)), pil.ANTIALIAS)
     """
-    
+
     max_width = width
     max_height = height
 
@@ -386,16 +249,15 @@ def do_paste(img, overlay, position):
             
             img_pixels[x + x_offset, y + y_offset] = new_pixel
 
-def do_overlay(img, overlay_path, filepath, overlay_source=None, overlay_tint=None, overlay_size=None, overlay_position=None):
+
+def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overlay_size=None, overlay_position=None):
     if overlay_path is None:
         return img
 
-    overlay_path = os.path.normpath(overlay_path)
-    
     if overlay_source == 'media':
-        overlay = pil.open(settings.MEDIA_ROOT + "/" + overlay_path)
+        overlay = pil.open(MEDIA_STORAGE.open(overlay_path))
     else:
-        overlay = pil.open(settings.STATIC_ROOT + "/" + overlay_path)
+        overlay = pil.open(STATIC_STORAGE.open(overlay_path))
 
     # We want the overlay to fit in the image
     iw, ih = img.size
@@ -404,8 +266,8 @@ def do_overlay(img, overlay_path, filepath, overlay_source=None, overlay_tint=No
     
     if overlay_size:
         tw, th = overlay_size.split(',')
-        ow  = int(round(float(tw.strip()) * iw))  
-        oh  = int(round(float(th.strip()) * ih))
+        ow = int(round(float(tw.strip()) * iw))
+        oh = int(round(float(th.strip()) * ih))
         if ow < 0:
             ow = oh * overlay_ratio
         elif oh < 0:
@@ -492,7 +354,7 @@ def do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, ov
         if overlay_position == "None":
             overlay_position = None
             
-        do_overlay(img, overlay, overlay_source, overlay_source, overlay_tint, overlay_size, overlay_position)
+        do_overlay(img, overlay, overlay_source, overlay_tint, overlay_size, overlay_position)
         overlay_index += 1
 
 
@@ -500,12 +362,10 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
     if mask_path is None:
         return img
 
-    mask_path = os.path.normpath(mask_path)
-
     if mask_source == 'media':
-        mask = pil.open(settings.MEDIA_ROOT + "/" + mask_path).convert("RGBA")
+        mask = pil.open(MEDIA_STORAGE.open(mask_path)).convert("RGBA")
     else:
-        mask = pil.open(settings.STATIC_ROOT + "/" + mask_path).convert("RGBA")
+        mask = pil.open(STATIC_STORAGE.open(mask_path)).convert("RGBA")
 
     # We want the mask to have the same size than the image
     if mask_mode == 'distort':
@@ -630,7 +490,7 @@ def scaleAndCrop(data, width, height, filepath, force=True, padding=None, overla
     do_mask(img, mask, mask_source)
     do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions)
     img = do_padding(img, padding)
-    
+
     tmp = StringIO()
     img.save(tmp, format, quality=quality)
     tmp.seek(0)
@@ -647,7 +507,6 @@ def scale(data, width, height, filepath, padding=None, overlays=(), overlay_sour
 
     input_file = StringIO(data)
     img = pil.open(input_file)
-
     if img.mode != "RGBA":
         img = img.convert("RGBA")
 

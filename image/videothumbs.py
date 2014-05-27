@@ -4,19 +4,13 @@ django-videothumbs
 """
 
 import cStringIO
-import os
+from django.conf.global_settings import FILE_UPLOAD_TEMP_DIR
 import math
+import os
 import time
 from PIL import Image
 
-from django.conf import settings
-from image.image_error import image_text
-
-IMAGE_ERROR_VIDEO_NOT_FOUND = getattr(settings, 'IMAGE_ERROR_VIDEO_NOT_FOUND', "Video not found")
-IMAGE_ERROR_FFMPEG = getattr(settings, 'IMAGE_ERROR_FFMPEG', "Video error")
-
-
-def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
+def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
     histogram = []
 
     http_status = 200
@@ -24,11 +18,10 @@ def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=
     name = video_path
     path = video_path
 
-    if not os.path.exists(video_path):
-        #return image_text(IMAGE_ERROR_VIDEO_NOT_FOUND, width, height), '404'
+    if not storage.exists(video_path):
         return "", '404'
 
-    framemask = "%s%s%s%s" % (settings.FILE_UPLOAD_TEMP_DIR,
+    framemask = "%s%s%s%s" % (FILE_UPLOAD_TEMP_DIR,
                               name.split('/')[-1].split('.')[0] + str(time.time()),
                               '.%d.',
                               format)
@@ -38,13 +31,12 @@ def generate_thumb(video_path, thumb_size=None, format='jpg', frames=100, width=
     # make sure that this command worked or return.
     if os.system(cmd) != 0:
         return "", '500'
-        #return image_text(IMAGE_ERROR_FFMPEG, width, height), '500'
 
     # loop through the generated images, open, and generate the image histogram.
     for i in range(1, frames + 1):
         fname = framemask % i
 
-        if not os.path.exists(fname):
+        if not storage.exists(fname):
             break
 
         image = Image.open(fname)

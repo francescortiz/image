@@ -14,9 +14,9 @@ On a more technical side, another feature of image is that **it does not use pre
 
 **Version 1.3**
 
-- Added suport for django storages
+- Added support for django storages
 - Code cleanup
-- Remove unneded stuff (font file, some functions).
+- Remove unneeded stuff (font file, some functions).
 
 **Version 1.2.1**
 

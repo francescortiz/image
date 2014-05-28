@@ -90,8 +90,6 @@ Significant update: now you have to {% load img %} instead of {% load image %}
 
 * **IMAGE_CACHE_STORAGE**: (default='image.storage.ImageCacheStorage') The storage to use for cached images.
 
-* **IMAGE_CACHE_STORAGE**: (default='image.storage.ImageCacheStorage') The storage to use for cached images.
-
 * **IMAGE_CACHE_HTTP_EXPIRATION**: (default=3600 * 24 * 30) What to say to browsers in the HTTP Response headers about cache duration.
 
 

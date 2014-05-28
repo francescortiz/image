@@ -9,6 +9,8 @@ from django.conf import settings
 def get(key, default):
     return getattr(settings, key, default)
 
+IMAGE_DEFAULT_FORMAT = get('IMAGE_DEFAULT_FORMAT', 'JPEG')
+IMAGE_DEFAULT_QUALITY = get('IMAGE_DEFAULT_QUALITY', 85)
 
 IMAGE_CACHE_STORAGE = get('IMAGE_CACHE_STORAGE', 'image.storage.ImageCacheStorage')
 IMAGE_CACHE_ROOT = get('IMAGE_CACHE_ROOT', None)

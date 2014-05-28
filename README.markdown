@@ -80,33 +80,24 @@ Significant update: now you have to {% load img %} instead of {% load image %}
 
 ### Custom settings
 
-* **IMAGE_CACHE_ROOT**: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
-
 * **IMAGE_DEFAULT_FORMAT**: (default='JPEG') It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
 
 * **IMAGE_DEFAULT_QUALITY**: (default=85) It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
 
-* **IMAGE_FONT_FILE**: (default=[image package path]/FreeFont.ttf) The font file to use for error messages.
+* **IMAGE_CACHE_ROOT**: It is the filesystem path where you want cache to be stored. You can use a web public directory. This way, with the appropiate .htaccess rules or server configuration, you can delegate to the http server thumbnail submission once they are already created.
 
-* **IMAGE_FONT_LINE_HEIGHT**: (default=.7) A base 1 percentage (1 equals 100%) to set line height for the font.
+* **IMAGE_CACHE_URL**: (default='/image/') Base url for cached images. If you plan to use Amazon S3 you need this and autogen=true.
 
-* **IMAGE_FONT_BACKGROUND**: ( default=(255,255,255,255) ) Background color for errors. RGBA format
+* **IMAGE_CACHE_STORAGE**: (default='image.storage.ImageCacheStorage') The storage to use for cached images.
 
-* **IMAGE_FONT_LINE_HEIGHT**: ( default=(0,0,0,255) ) Foreground color for errors. RGBA format
+* **IMAGE_CACHE_STORAGE**: (default='image.storage.ImageCacheStorage') The storage to use for cached images.
 
-* **IMAGE_ERROR_NOT_FOUND**: ( default="Image not found" ) Text to show when an image is not found.
+* **IMAGE_CACHE_HTTP_EXPIRATION**: (default=3600 * 24 * 30) What to say to browsers in the HTTP Response headers about cache duration.
 
-* **IMAGE_ERROR_NOT_VALID**: ( default="Image not valid" ) Text to show when an image is not valid.
-
-* **IMAGE_ERROR_VIDEO_NOT_FOUND**: ( default="Video not found" ) Text to show when a video is not found.
-
-* **IMAGE_ERROR_FFMPEG**: ( default="Video error" ) Text to show when ffmpeg fails.
-
-* **IMAGE_WRONG_REQUEST**: (default="Wrong request" ) Text to show when the request is wrong
 
 ### Dependency on django settings
 
-* **STATIC_ROOT**: Only if you use overlay or mask.
+* **STATIC_ROOT / STATICFILES**: Only if you use overlay or mask.
 
 * **FILE_UPLOAD_TEMP_DIR**: Used to store temporary images when working with videos.
 
@@ -238,22 +229,31 @@ Sample model:
 Sample urls.py:
 
     # -*- coding: UTF-8 -*-
-    from django.conf.urls.defaults import *
+    from django.conf.urls import *
     from django.contrib import admin
     admin.autodiscover()
     
     urlpatterns = patterns('',
         (r'^admin/', include(admin.site.urls)),
-        (r'^', include('image.urls')),
+        (r'^image/', include('image.urls')),
     )
 
 Sample template:
 
     {% load img %}
+
+    Make a cropped high quality JPEG
     <img src="{% image test.image 'width=150&height=150&format=JPEG&quality=95' %}"/>
+
+    Make a cropped PNG
     <img src="{% image test.video 'width=150&height=150&format=PNG' %}"/>
+
+    Scale a static image
     <img src="{% image path_variable 'width=150&height=150&mode=scale&static=true' %}"/>
+
+    Scale and add overlay to a remote image
     <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&overlay=img/overlay.png' %}"/>
+
 
 ## TODO
 

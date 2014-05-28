@@ -3,11 +3,9 @@ from cStringIO import StringIO
 import hashlib
 
 from image import settings
+from image.settings import IMAGE_DEFAULT_QUALITY, IMAGE_DEFAULT_FORMAT
 from image.storage import MEDIA_STORAGE, STATIC_STORAGE
 
-
-IMAGE_DEFAULT_FORMAT = getattr(settings, 'IMAGE_DEFAULT_FORMAT', 'JPEG')
-IMAGE_DEFAULT_QUALITY = getattr(settings, 'IMAGE_DEFAULT_QUALITY', 85)
 
 INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT
 

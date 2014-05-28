@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='image',
-    version='1.3.1',
+    version='1.3.2',
     author=u'Francesc Ortiz',
     author_email='francescortiz@gmail.com',
     packages=find_packages(),

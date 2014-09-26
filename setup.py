@@ -2,9 +2,11 @@
 from distutils.core import setup
 from setuptools import find_packages
 
+from image import VERSION
+
 setup(
     name='image',
-    version='1.3.2',
+    version='.'.join(VERSION),
     author=u'Francesc Ortiz',
     author_email='francescortiz@gmail.com',
     packages=find_packages(),

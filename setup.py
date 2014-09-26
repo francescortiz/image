@@ -6,7 +6,7 @@ from image import VERSION
 
 setup(
     name='image',
-    version='.'.join(VERSION),
+    version='.'.join((str(x) for x in VERSION)),
     author=u'Francesc Ortiz',
     author_email='francescortiz@gmail.com',
     packages=find_packages(),

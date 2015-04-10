@@ -135,7 +135,7 @@ def resizeCrop(img, width, height, center, force):
 
 def do_tint(img, tint):
     
-    if tint is None or tint is 'None':
+    if not tint or tint is 'None':
         return
     
     if img.mode != "RGBA":
@@ -249,7 +249,7 @@ def do_paste(img, overlay, position):
 
 
 def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overlay_size=None, overlay_position=None):
-    if overlay_path is None:
+    if not overlay_path:
         return img
 
     if overlay_source == 'media':
@@ -357,7 +357,7 @@ def do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, ov
 
 
 def do_mask(img, mask_path, mask_source, mask_mode=None):
-    if mask_path is None:
+    if not mask_path:
         return img
 
     if mask_source == 'media':
@@ -400,7 +400,7 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
 
 
 def do_fill(img, fill, width, height):
-    if fill is None:
+    if not fill:
         return img
 
     overlay = img
@@ -450,7 +450,7 @@ def do_padding(img, padding):
 
 
 def do_background(img, background):
-    if background is None:
+    if not background:
         return img
 
     overlay = img

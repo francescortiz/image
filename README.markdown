@@ -252,12 +252,17 @@ Sample template:
     Scale and add overlay to a remote image
     <img src="{% image '' 'url=http://www.example.com/img.jpg&width=150&height=150&mode=scale&overlay=img/overlay.png' %}"/>
 
+## Known bugs
+
+* When using RunPython in migrations the image_center does not get associated to the image field. Check issue [#4](https://github.com/francescortiz/image/issues/4) for a workaround.
 
 ## TODO
 
+* Add the symlink-mirrored storage that allows it ot perform fast when using Amazon S3.
 * Remove the need to specify with and height for images beeing manipulated. Let the system work with the original image size.
 * Add the posibility to prevent upscaling.
 * Make it possible to set the size of the center of attention, in order to be able to make crops that only show that area.
+ 
 
 
 

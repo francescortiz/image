@@ -10,18 +10,20 @@ import os
 import time
 from PIL import Image
 
+TMP_DIR = FILE_UPLOAD_TEMP_DIR or '/tmp/'
+
 def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
     histogram = []
 
     http_status = 200
     
     name = video_path
-    path = video_path
+    path = storage.path(video_path)
 
     if not storage.exists(video_path):
         return "", '404'
 
-    framemask = "%s%s%s%s" % (FILE_UPLOAD_TEMP_DIR,
+    framemask = "%s%s%s%s" % (TMP_DIR,
                               name.split('/')[-1].split('.')[0] + str(time.time()),
                               '.%d.',
                               format)
@@ -36,7 +38,7 @@ def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=10
     for i in range(1, frames + 1):
         fname = framemask % i
 
-        if not storage.exists(fname):
+        if not os.path.exists(os.path.join(TMP_DIR, fname)):
             break
 
         image = Image.open(fname)

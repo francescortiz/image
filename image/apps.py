@@ -13,7 +13,6 @@ class ImageConfig(AppConfig):
     verbose_name = "Image"
 
     def ready(self):
-        print '0settings.TEMPLATE_CONTEXT_PROCESSORS'
         if settings.DEBUG and not 'django.template.context_processors.request' in settings.TEMPLATE_CONTEXT_PROCESSORS:
             print >> sys.stderr, \
                 "image: Add 'django.template.context_processors.request' to TEMPLATE_CONTEXT_PROCESSORS in order to\n" \

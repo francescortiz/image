@@ -12,6 +12,12 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.4**
+
+- No need to tell width and height. It takes the image dimensions if they are lacking.
+- Added pre_rotation and post_rotation. Rotate the image before cropping and applying effects or after.
+ 
+
 **Version 1.3**
 
 - Added support for django storages
@@ -164,8 +170,8 @@ Parameters are supplied in query string format.
 
 ### Common Parameters
 
-* **width**: [required] target width. Set it to a big number if you are scaling to fit vertically.
-* **height**: [required] target height. Set it to a big number if you are scaling to fit horizontally.
+* **width**: target width. Set it to a big number if you are scaling to fit vertically.
+* **height**: target height. Set it to a big number if you are scaling to fit horizontally.
 * **mode**: "scale" or "crop". Defaults to "crop". "scale" will fit the image to the given width and height without loosing proportions. "crop" will fill the given area cropping if necessary.
 * **overlay** (multiple values accepted): and overlay image to add on top of the image. It won't be resized. I use it to place a play button on top of video thumbnails. Overlay search path is STATIC_ROOT.
 * **overlay_source=media/static** (multiple values accepted): tells where to look for the overlay, either MEDIA_ROOT or STATIC_ROOT.
@@ -178,6 +184,8 @@ Parameters are supplied in query string format.
 * **background=RRGGBBAA**: if set, background color to apply to the image (only makes sense on transparent images).
 * **fill=RRGGBBAA**: forces the size of the generated image to be the request width and height. Unless "mode" is set to "scale", it behaves exactly as "background=RRGGBBAA".
 * **tint=RRGGBB tint=RRGGBBAA tint=RRGGBBAAII**: tints the image. Works like overlay_tint.
+* **pre_rotation=DEGREES**: rotates the image before doing any work on it.
+* **post_rotation=DEGREES**: rotates the image after doing all the work with it.
 
 
 ### Other parameters

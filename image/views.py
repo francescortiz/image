@@ -12,8 +12,8 @@ from django.utils.encoding import smart_unicode
 
 from image.settings import IMAGE_CACHE_HTTP_EXPIRATION, IMAGE_CACHE_ROOT
 from image.storage import IMAGE_CACHE_STORAGE, MEDIA_STORAGE, STATIC_STORAGE
-from image.utils import scale, scaleAndCrop, IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
-    image_create_token
+from image.utils import IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
+    image_create_token, render
 from image.videothumbs import generate_thumb
 
 
@@ -86,15 +86,23 @@ def image(request, path, token, autogen=False):
     overlay_sizes = qs.getlist('overlay_size')
     overlay_positions = qs.getlist('overlay_position')
 
-    width = int(qs.get('width', None))
-    height = int(qs.get('height', None))
+    width = qs.get('width', None)
+    if width:
+        width = int(width)
+    height = qs.get('height', None)
+    if height:
+        height = int(height)
+
+    pre_rotation = qs.get('pre_rotation', None)
+    post_rotation = qs.get('post_rotation', None)
+
     try:
-        padding = float(qs.get('padding',None))
+        padding = float(qs.get('padding', None))
     except TypeError:
         padding = 0.0
 
     if "video" in qs:
-        data, http_response = generate_thumb(file_storage, smart_unicode(path), width=width, height=height)
+        data, http_response = generate_thumb(file_storage, smart_unicode(path))
         response.status_code = http_response
     else:
         try:
@@ -112,10 +120,14 @@ def image(request, path, token, autogen=False):
 
     if data:
         try:
-            if mode == "scale":
-                output_data = scale(data, width, height, path, padding=padding, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask, mask_source=mask_source, format=format, quality=quality, fill=fill, background=background, tint=tint)
-            else:
-                output_data = scaleAndCrop(data, width, height, path, True, padding=padding, overlays=overlays, overlay_sources=overlay_sources, overlay_tints=overlay_tints, overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask, mask_source=mask_source, center=center, format=format, quality=quality, fill=fill, background=background, tint=tint)
+            crop = (mode != "scale")
+            force = True
+            output_data = render(data, width, height, path, force=force, padding=padding, overlays=overlays,
+                                 overlay_sources=overlay_sources, overlay_tints=overlay_tints,
+                                 overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask,
+                                 mask_source=mask_source, center=center, format=format, quality=quality, fill=fill,
+                                 background=background, tint=tint, pre_rotation=pre_rotation,
+                                 post_rotation=post_rotation, crop=crop)
         except IOError:
             traceback.print_exc()
             response.status_code = 500

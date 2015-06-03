@@ -68,7 +68,7 @@ def resizeScale(img, width, height, filepath):
 
     max_width = width
     max_height = height
-    
+
     src_width, src_height = img.size
     src_ratio = float(src_width) / float(src_height)
     dst_width = max_width
@@ -77,10 +77,10 @@ def resizeScale(img, width, height, filepath):
     if dst_height > max_height:
         dst_height = max_height
         dst_width = dst_height * src_ratio
-    
+
     img_width, img_height = img.size
     img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
-    
+
     return img
 
 
@@ -129,46 +129,46 @@ def resizeCrop(img, width, height, center, force):
 
         img = img.crop((int(x_offset), int(y_offset), int(x_offset) + int(crop_width), int(y_offset) + int(crop_height)))
         img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
-    
+
     return img
 
 
 def do_tint(img, tint):
-    
+
     if not tint or tint is 'None':
         return
-    
+
     if img.mode != "RGBA":
         img = img.convert("RGBA")
-    
+
     try:
         tint_red = float(int("0x%s" % tint[0:2], 16)) / 255.0
     except ValueError:
         tint_red = 1.0
-     
+
     try:
         tint_green = float(int("0x%s" % tint[2:4], 16)) / 255.0
     except ValueError:
         tint_green = 1.0
-     
+
     try:
         tint_blue = float(int("0x%s" % tint[4:6], 16)) / 255.0
     except ValueError:
         tint_blue = 1.0
-     
+
     try:
         tint_alpha = float(int("0x%s" % tint[6:8], 16)) / 255.0
     except ValueError:
         tint_alpha = 1.0
- 
+
     try:
         intensity = float(int("0x%s" % tint[8:10], 16))
     except ValueError:
         intensity = 255.0
-        
+
     if intensity > 0.0 and (tint_red != 1.0 or tint_green != 1.0 or tint_blue != 1.0 or tint_alpha != 1.0):
         # Only tint if the color provided is not ffffffff, because that equals no tint
-        
+
         pixels = img.load()
         if intensity == 255.0:
             for y in xrange(img.size[1]):
@@ -203,7 +203,7 @@ def do_paste(img, overlay, position):
     img_pixels = img.load()
     overlay_width, overlay_height = overlay.size
     x_offset, y_offset = position
-    
+
     for y in xrange(min(overlay_height, img.size[1] - y_offset)):
         for x in xrange(min(overlay_width, img.size[0] - x_offset)):
             img_pixel = img_pixels[x + x_offset, y + y_offset]
@@ -237,14 +237,14 @@ def do_paste(img, overlay, position):
                 #total_alpha_percent = oa + ia
                 overlay_percent = oa
                 image_percent = ia * oa1
-                
+
                 new_pixel = (
                              int(power_to_rgb( rgb_to_power(img_pixel[0]) * image_percent + rgb_to_power(overlay_pixel[0]) * overlay_percent  )),
                              int(power_to_rgb( rgb_to_power(img_pixel[1]) * image_percent + rgb_to_power(overlay_pixel[1]) * overlay_percent  )),
                              int(power_to_rgb( rgb_to_power(img_pixel[2]) * image_percent + rgb_to_power(overlay_pixel[2]) * overlay_percent  )),
                              int((oa + ia * oa1) * 255.0),
                              )
-            
+
             img_pixels[x + x_offset, y + y_offset] = new_pixel
 
 
@@ -261,7 +261,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
     iw, ih = img.size
     ow, oh = overlay.size
     overlay_ratio = float(ow) / float(oh)
-    
+
     if overlay_size:
         tw, th = overlay_size.split(',')
         ow = int(round(float(tw.strip()) * iw))
@@ -270,7 +270,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
             ow = oh * overlay_ratio
         elif oh < 0:
             oh = ow / overlay_ratio
-        
+
         overlay = resizeScale(overlay, ow, oh, overlay_source + "/" + overlay_path)
         ow, oh = overlay.size
     else:
@@ -290,7 +290,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
 
     if overlay_tint:
         do_tint(overlay, overlay_tint)
-    
+
     if not overlay_position:
         target_x = int((iw - ow) / 2)
         target_y = int((ih - oh) / 2)
@@ -304,54 +304,54 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
             target_y = int((ih - oh) / 2)
         else:
             target_y  = int(round(float(ty.strip()) * ih))
-        
+
     """
     TODO: paste seems to be buggy, because pasting over opaque background returns a non opaque image
     (the parts that are not 100% opaque or 100% transparent become partially transparent. 
     the putalpha workareound doesn't seem to look nice enough
-    """ 
+    """
     #r, g, b, a = img.split()
     #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
     #img.putalpha(a)
     do_paste(img, overlay, (target_x, target_y))
-    
+
     return img
 
 
 def do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions):
     overlay_index = 0
-    
+
     for overlay in overlays:
-        
+
         try:
             overlay_tint = overlay_tints[overlay_index]
         except (IndexError, TypeError):
             overlay_tint = None
-        
+
         if overlay_tint == "None":
             overlay_tint = None
-            
+
         try:
             overlay_source = overlay_sources[overlay_index]
         except (IndexError, TypeError):
             overlay_source = 'static'
-            
+
         try:
             overlay_size = overlay_sizes[overlay_index]
         except (IndexError, TypeError):
             overlay_size = None
-            
+
         if overlay_size == "None":
             overlay_size = None
-            
+
         try:
             overlay_position = overlay_positions[overlay_index]
         except (IndexError, TypeError):
             overlay_position = None
-            
+
         if overlay_position == "None":
             overlay_position = None
-            
+
         do_overlay(img, overlay, overlay_source, overlay_tint, overlay_size, overlay_position)
         overlay_index += 1
 
@@ -371,7 +371,7 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
         mw, mh = mask.size
         if mw != iw or mh != ih:
             mask = mask.resize((iw, ih), pil.ANTIALIAS)
-    
+
     else:
         # We want the overlay to fit in the image
         iw, ih = img.size
@@ -384,10 +384,10 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
         if oh > ih:
             ow = int(float(ih) * overlay_ratio)
             oh = ih
-            
+
         if ow != iw or oh != ih:
             have_to_scale = True
-    
+
         if have_to_scale:
             nmask = mask.resize((ow, oh), pil.ANTIALIAS)
             mask = pil.new('RGBA', (iw, ih))
@@ -404,7 +404,7 @@ def do_fill(img, fill, width, height):
         return img
 
     overlay = img
-    
+
     fill_color = (
         int("0x%s" % fill[0:2], 16),
         int("0x%s" % fill[2:4], 16),
@@ -433,9 +433,9 @@ def do_padding(img, padding):
             return img
     except ValueError:
         return
-    
+
     iw, ih = img.size
-    
+
     img.thumbnail(
         (
             int( round( float(img.size[0]) * (1.0 - padding) ) ),
@@ -443,9 +443,9 @@ def do_padding(img, padding):
         ),
         pil.ANTIALIAS
         )
-    
+
     img = do_fill(img, "ffffff00", iw, ih)
-    
+
     return img
 
 
@@ -454,7 +454,7 @@ def do_background(img, background):
         return img
 
     overlay = img
-    
+
     fill_color = (
         int("0x%s" % background[0:2], 16),
         int("0x%s" % background[2:4], 16),
@@ -472,15 +472,48 @@ def do_background(img, background):
     return img
 
 
-def scaleAndCrop(data, width, height, filepath, force=True, padding=None, overlays=(), overlay_sources=(), overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None, center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None, tint=None):
-    """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
+def do_rotate(img, rotation):
+    if not rotation:
+        return img
+
+    try:
+        rotation = float(rotation)
+    except ValueError:
+        rotation = 0
+
+    if rotation % 90 == 0:
+        img = img.rotate(rotation, pil.NEAREST, expand=True)
+    else:
+        img = img.rotate(rotation, pil.BICUBIC , expand=True)
+
+    return img
+
+
+def render(data, width, height, filepath, force=True, padding=None, overlays=(), overlay_sources=(),
+                 overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None,
+                 center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None,
+                 tint=None, pre_rotation=None, post_rotation=None, crop=True):
+    """
+    Rescale the given image, optionally cropping it to make sure the result image has the specified width and height.
+    """
 
     input_file = StringIO(data)
     img = pil.open(input_file)
     if img.mode != "RGBA":
         img = img.convert("RGBA")
 
-    img = resizeCrop(img, width, height, center, force)
+    if width is None:
+        width = img.size[0]
+    if height is None:
+        height = img.size[1]
+
+
+    img = do_rotate(img, pre_rotation)
+
+    if crop:
+        img = resizeCrop(img, width, height, center, force)
+    else:
+        img = resizeScale(img, width, height, filepath)
 
     do_tint(img, tint)
     img = do_fill(img, fill, width, height)
@@ -488,6 +521,7 @@ def scaleAndCrop(data, width, height, filepath, force=True, padding=None, overla
     do_mask(img, mask, mask_source)
     do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions)
     img = do_padding(img, padding)
+    img = do_rotate(img, post_rotation)
 
     tmp = StringIO()
     img.save(tmp, format, quality=quality)
@@ -498,30 +532,3 @@ def scaleAndCrop(data, width, height, filepath, force=True, padding=None, overla
 
     return output_data
 
-
-def scale(data, width, height, filepath, padding=None, overlays=(), overlay_sources=(), overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None, format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None, tint=None):
-    """Rescale the given image, optionally cropping it to make sure the result image has the specified width and height."""
-
-
-    input_file = StringIO(data)
-    img = pil.open(input_file)
-    if img.mode != "RGBA":
-        img = img.convert("RGBA")
-
-    img = resizeScale(img, width, height, filepath)
-
-    do_tint(img, tint)
-    img = do_fill(img, fill, width, height)
-    img = do_background(img, background)
-    do_mask(img, mask, mask_source)
-    do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions)
-    img = do_padding(img, padding)
-
-    tmp = StringIO()
-    img.save(tmp, format, quality=quality)
-    tmp.seek(0)
-    output_data = tmp.getvalue()
-    input_file.close()
-    tmp.close()
-
-    return output_data

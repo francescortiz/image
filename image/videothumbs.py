@@ -12,7 +12,7 @@ from PIL import Image
 
 TMP_DIR = FILE_UPLOAD_TEMP_DIR or '/tmp/'
 
-def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=100, width=100, height=100):
+def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=100):
     histogram = []
 
     http_status = 200

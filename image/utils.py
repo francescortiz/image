@@ -198,6 +198,10 @@ def do_tint(img, tint):
                     )
 
 
+def do_grayscale(img):
+    return img.convert('LA').convert('RGBA')
+
+
 def do_paste(img, overlay, position):
     overlay_pixels = overlay.load()
     img_pixels = img.load()
@@ -492,7 +496,7 @@ def do_rotate(img, rotation):
 def render(data, width, height, filepath, force=True, padding=None, overlays=(), overlay_sources=(),
                  overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None,
                  center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None,
-                 tint=None, pre_rotation=None, post_rotation=None, crop=True):
+                 tint=None, pre_rotation=None, post_rotation=None, crop=True, grayscale=False):
     """
     Rescale the given image, optionally cropping it to make sure the result image has the specified width and height.
     """
@@ -507,7 +511,6 @@ def render(data, width, height, filepath, force=True, padding=None, overlays=(),
     if height is None:
         height = img.size[1]
 
-
     img = do_rotate(img, pre_rotation)
 
     if crop:
@@ -515,6 +518,8 @@ def render(data, width, height, filepath, force=True, padding=None, overlays=(),
     else:
         img = resizeScale(img, width, height, filepath)
 
+    if grayscale:
+        img = do_grayscale(img)
     do_tint(img, tint)
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)

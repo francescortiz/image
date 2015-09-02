@@ -14,6 +14,11 @@ On a more technical side, another feature of image is that **it does not use pre
 
 **Version 1.4**
 
+- Added grayscale
+
+
+**Version 1.4**
+
 - No need to tell width and height. It takes the image dimensions if they are lacking.
 - Added pre_rotation and post_rotation. Rotate the image before cropping and applying effects or after.
  
@@ -186,6 +191,7 @@ Parameters are supplied in query string format.
 * **tint=RRGGBB tint=RRGGBBAA tint=RRGGBBAAII**: tints the image. Works like overlay_tint.
 * **pre_rotation=DEGREES**: rotates the image before doing any work on it.
 * **post_rotation=DEGREES**: rotates the image after doing all the work with it.
+* **grayscale=true**: converts the image to grayscale.
 
 
 ### Other parameters

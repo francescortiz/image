@@ -101,6 +101,8 @@ def image(request, path, token, autogen=False):
     except TypeError:
         padding = 0.0
 
+    grayscale = bool(qs.get('grayscale', False))
+
     if "video" in qs:
         data, http_response = generate_thumb(file_storage, smart_unicode(path))
         response.status_code = http_response
@@ -127,7 +129,7 @@ def image(request, path, token, autogen=False):
                                  overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask,
                                  mask_source=mask_source, center=center, format=format, quality=quality, fill=fill,
                                  background=background, tint=tint, pre_rotation=pre_rotation,
-                                 post_rotation=post_rotation, crop=crop)
+                                 post_rotation=post_rotation, crop=crop, grayscale=grayscale)
         except IOError:
             traceback.print_exc()
             response.status_code = 500

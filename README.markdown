@@ -6,7 +6,7 @@ Also, many thumbnailers forget about videos.
 
 This is why I created this image resizing library for django, in which you set the center of attention of an image (or video) and cropping is done **automatically keeping the center of attention** as close to the center of the image as possible. Thanks to this, when people's faces or the significant element of a picture are not centered, you can relay on automatic cropping confident that those items will be respected.
 
-Appart from that, I keep adding the functionalities that I need as I come into new projects. Thanks to this, you can see features like **masking, multiple overlays, tint, fill color** or **background color**.
+Apart from that, I keep adding the functionalities that I need as I come into new projects. Thanks to this, you can see features like **masking, multiple overlays, tint, fill color** or **background color**.
 
 On a more technical side, another feature of image is that **it does not use presets**. You just set the parameters that you want to use on each place, allowing you to quickly implement it and to easily integrate image with other code. For server security and stability, it relays on tokens and disk cache to keep the server in peace. If you publish this disk cache through **mod_rewrite** or equivalents, you can even skip django from getting image requests.
 

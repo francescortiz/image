@@ -40,7 +40,7 @@ class ImageCenterField(models.Field):
 
     description = "A field that stores the center of attention for an image."
 
-    __metaclass__ = models.SubfieldBase
+    # __metaclass__ = models.SubfieldBase
 
     def __init__(self, image_field=None, *args, **kwargs):
         if image_field is not None:
@@ -65,6 +65,7 @@ class ImageCenterField(models.Field):
     def to_python(self, value):
         if isinstance(value, ImageCenter):
             return value
+
         return ImageCenter(self.image_field, xy=value)
 
     # Esta función es llamada al escribir un valor en la base de datos
@@ -73,6 +74,9 @@ class ImageCenterField(models.Field):
             return str(value.x) + "," + str(value.y)
         except AttributeError:
             return str(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return ImageCenter(self.image_field, xy=value)
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
@@ -83,18 +87,17 @@ class ImageCenterField(models.Field):
 
 
 def post_init_capture(sender, instance, *args, **kwargs):
-    fields = instance.__class__._meta.get_all_field_names()
-    for field_name in fields:
-        try:
-            field = instance.__class__._meta.get_field(field_name)
-            if isinstance(field, ImageCenterField):
-                image_field = instance.__class__._meta.get_field(field.image_field.name)
-                image_instance = instance.__getattribute__(image_field.name)
-                image_center_instance = instance.__getattribute__(field.name)
-                image_instance.__image_center_instance__ = image_center_instance
-                image_center_instance.image_path = unicode(image_instance)
-        except FieldDoesNotExist:
-            pass
+    fields = instance.__class__._meta.get_fields()
+    for field in fields:
+        if isinstance(field, ImageCenterField):
+            image_field = instance.__class__._meta.get_field(field.image_field.name)
+            image_instance = instance.__getattribute__(image_field.name)
+            image_center_instance = instance.__getattribute__(field.name)
+            image_instance.__image_center_instance__ = image_center_instance
+            if isinstance(image_center_instance, basestring):
+                image_center_instance = ImageCenter(image_field, xy=image_center_instance)
+                setattr(instance, field.name, image_center_instance)
+            image_center_instance.image_path = unicode(image_instance)
 
 post_init.connect(post_init_capture)
 

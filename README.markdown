@@ -12,6 +12,11 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.4.4**
+
+- Added an option to prevent enlarging images. "enlarge=false" or whatever value different than true. defaults to true for backwards compatibility.
+
+
 **Version 1.4**
 
 - Added grayscale
@@ -192,6 +197,7 @@ Parameters are supplied in query string format.
 * **pre_rotation=DEGREES**: rotates the image before doing any work on it.
 * **post_rotation=DEGREES**: rotates the image after doing all the work with it.
 * **grayscale=true**: converts the image to grayscale.
+* **enlarge**: "true" or anything else. Defaults to "true". If it is true it enlarges images to a size bigger than their original size.
 
 
 ### Other parameters

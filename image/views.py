@@ -79,7 +79,8 @@ def image(request, path, token, autogen=False):
 
     center = qs.get('center', ".5,.5")
     mode = qs.get('mode', "crop")
-        
+    enlarge = qs.get('enlarge', "true")
+
     overlays = qs.getlist('overlay')
     overlay_sources = qs.getlist('overlay_source')
     overlay_tints = qs.getlist('overlay_tint')
@@ -123,8 +124,9 @@ def image(request, path, token, autogen=False):
     if data:
         try:
             crop = (mode != "scale")
-            force = True
-            output_data = render(data, width, height, path, force=force, padding=padding, overlays=overlays,
+            force = (enlarge == "true")
+            print force
+            output_data = render(data, width, height, force=force, padding=padding, overlays=overlays,
                                  overlay_sources=overlay_sources, overlay_tints=overlay_tints,
                                  overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask,
                                  mask_source=mask_source, center=center, format=format, quality=quality, fill=fill,

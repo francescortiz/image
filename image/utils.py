@@ -58,19 +58,17 @@ def image_create_token(parameters):
     return "image_token_%s" % hashlib.sha1(parameters).hexdigest()
 
 
-def resizeScale(img, width, height, filepath):
-    """
-    # Esto no hace nada perceptible
-    RATIO = 2
-    while img.size[0] / RATIO > width or img.size[1] / RATIO > height:
-        img = img.resize((int(img.size[0]/RATIO), int(img.size[1]/RATIO)), pil.ANTIALIAS)
-    """
-
-    max_width = width
-    max_height = height
-
+def resizeScale(img, width, height, force):
     src_width, src_height = img.size
     src_ratio = float(src_width) / float(src_height)
+
+    if force:
+        max_width = width
+        max_height = height
+    else:
+        max_width = min(width, src_width)
+        max_height = min(height, src_height)
+
     dst_width = max_width
     dst_height = dst_width / src_ratio
 
@@ -78,7 +76,7 @@ def resizeScale(img, width, height, filepath):
         dst_height = max_height
         dst_width = dst_height * src_ratio
 
-    img_width, img_height = img.size
+    # img_width, img_height = img.size
     img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     return img
@@ -493,7 +491,7 @@ def do_rotate(img, rotation):
     return img
 
 
-def render(data, width, height, filepath, force=True, padding=None, overlays=(), overlay_sources=(),
+def render(data, width, height, force=True, padding=None, overlays=(), overlay_sources=(),
                  overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None,
                  center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None,
                  tint=None, pre_rotation=None, post_rotation=None, crop=True, grayscale=False):
@@ -516,7 +514,7 @@ def render(data, width, height, filepath, force=True, padding=None, overlays=(),
     if crop:
         img = resizeCrop(img, width, height, center, force)
     else:
-        img = resizeScale(img, width, height, filepath)
+        img = resizeScale(img, width, height, force)
 
     if grayscale:
         img = do_grayscale(img)

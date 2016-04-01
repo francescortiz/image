@@ -1,6 +1,7 @@
 #-*- coding: UTF-8 -*-
 
 from django.core.urlresolvers import reverse
+from django.utils import six
 
 from image.views import image as image_view
 from image.utils import image_create_token
@@ -13,7 +14,7 @@ def get_image_url(image, parameters):
     return reverse(
         'image.views.image',
         args=(
-            unicode(image),
+            six.text_type(image),
             image_create_token(parameters)
         )
     )

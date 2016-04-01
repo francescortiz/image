@@ -5,6 +5,9 @@ from django.template.defaulttags import register
 from django.core.urlresolvers import reverse
 from django.db.models.fields.files import ImageFieldFile
 import os
+
+from django.utils import six
+
 from image.storage import IMAGE_CACHE_STORAGE
 from image.video_field import VideoFieldFile
 from image import views as image_views
@@ -57,7 +60,7 @@ class ImageNode(template.Node):
             # We want the image to be generated immediately
             image_views.image(None, str(image_field), parameters, True)
 
-        return IMAGE_CACHE_STORAGE.url(os.path.join(unicode(image_field), image_tokenize(session, parameters)))
+        return IMAGE_CACHE_STORAGE.url(os.path.join(six.text_type(image_field), image_tokenize(session, parameters)))
 
         # return reverse(
         #     'image.views.image',
@@ -74,6 +77,6 @@ def image(parser, token):
         # split_contents() knows not to split quoted strings.
         tag_name, image_field, parameters = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, "%r tag requires 2 arguments " % token.contents.split()[0]
+        raise template.TemplateSyntaxError("%r tag requires 2 arguments " % token.contents.split()[0])
 
     return ImageNode(image_field, parameters)

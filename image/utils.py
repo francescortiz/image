@@ -1,5 +1,11 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from django.utils import six
 from PIL import Image as pil
-from cStringIO import StringIO
+from django.utils.six import StringIO, BytesIO
 import hashlib
 
 from image import settings
@@ -55,7 +61,7 @@ def add_rgba_to_pixel(pixel, rgba, x_ammount, x_displacement):
 
 
 def image_create_token(parameters):
-    return "image_token_%s" % hashlib.sha1(parameters).hexdigest()
+    return "image_token_%s" % hashlib.sha1(parameters.encode("utf8")).hexdigest()
 
 
 def resizeScale(img, width, height, force):
@@ -169,8 +175,8 @@ def do_tint(img, tint):
 
         pixels = img.load()
         if intensity == 255.0:
-            for y in xrange(img.size[1]):
-                for x in xrange(img.size[0]):
+            for y in range(img.size[1]):
+                for x in range(img.size[0]):
                     data = pixels[x, y]
                     pixels[x, y] = (
                         int(float(data[0]) * tint_red),
@@ -185,8 +191,8 @@ def do_tint(img, tint):
             tint_green *= intensity
             tint_blue *= intensity
             tint_alpha *= intensity
-            for y in xrange(img.size[1]):
-                for x in xrange(img.size[0]):
+            for y in range(img.size[1]):
+                for x in range(img.size[0]):
                     data = pixels[x, y]
                     pixels[x, y] = (
                         int(float(data[0]) * intensity_inv + float(data[0]) * tint_red),
@@ -206,8 +212,8 @@ def do_paste(img, overlay, position):
     overlay_width, overlay_height = overlay.size
     x_offset, y_offset = position
 
-    for y in xrange(min(overlay_height, img.size[1] - y_offset)):
-        for x in xrange(min(overlay_width, img.size[0] - x_offset)):
+    for y in range(min(overlay_height, img.size[1] - y_offset)):
+        for x in range(min(overlay_width, img.size[0] - x_offset)):
             img_pixel = img_pixels[x + x_offset, y + y_offset]
             overlay_pixel = overlay_pixels[x, y]
             ia = img_pixel[3]
@@ -499,7 +505,11 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     Rescale the given image, optionally cropping it to make sure the result image has the specified width and height.
     """
 
-    input_file = StringIO(data)
+    if not isinstance(data, six.string_types):
+        input_file = BytesIO(data)
+    else:
+        input_file = StringIO(data)
+
     img = pil.open(input_file)
     if img.mode != "RGBA":
         img = img.convert("RGBA")
@@ -526,7 +536,7 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     img = do_padding(img, padding)
     img = do_rotate(img, post_rotation)
 
-    tmp = StringIO()
+    tmp = BytesIO()
     img.save(tmp, format, quality=quality)
     tmp.seek(0)
     output_data = tmp.getvalue()

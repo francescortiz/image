@@ -1,4 +1,10 @@
 # -*- coding: UTF-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import requests
 from django.core.files.base import ContentFile
 from encodings.base64_codec import base64_decode
 import os
@@ -8,7 +14,7 @@ import traceback
 from django.http import HttpResponse, QueryDict
 from django.http.response import Http404
 from django.utils import timezone
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import force_text
 
 from image.settings import IMAGE_CACHE_HTTP_EXPIRATION, IMAGE_CACHE_ROOT
 from image.storage import IMAGE_CACHE_STORAGE, MEDIA_STORAGE, STATIC_STORAGE
@@ -47,7 +53,7 @@ def image(request, path, token, autogen=False):
             return 'Already generated'
         
         try:
-            f = IMAGE_CACHE_STORAGE.open(cached_image_file, "r")
+            f = IMAGE_CACHE_STORAGE.open(cached_image_file, "rb")
         except IOError:
             raise Http404()
         response.write(f.read())
@@ -105,13 +111,13 @@ def image(request, path, token, autogen=False):
     grayscale = bool(qs.get('grayscale', False))
 
     if "video" in qs:
-        data, http_response = generate_thumb(file_storage, smart_unicode(path))
+        data, http_response = generate_thumb(file_storage, force_text(path))
         response.status_code = http_response
     else:
         try:
             try:
-                f = urllib.urlopen(qs['url'])
-                data = f.read()
+                f = requests.get(qs['url'])
+                data = f.content
                 f.close()
             except KeyError:
                 f = file_storage.open(path)
@@ -125,7 +131,7 @@ def image(request, path, token, autogen=False):
         try:
             crop = (mode != "scale")
             force = (enlarge == "true")
-            print force
+            print(force)
             output_data = render(data, width, height, force=force, padding=padding, overlays=overlays,
                                  overlay_sources=overlay_sources, overlay_tints=overlay_tints,
                                  overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask,

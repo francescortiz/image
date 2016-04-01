@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models.signals import post_init
 from django.db.models.fields import FieldDoesNotExist
+from django.utils import six
 
 from image.video_field import VideoField
 from image.forms import ImageCenterFormField
@@ -94,10 +95,10 @@ def post_init_capture(sender, instance, *args, **kwargs):
             image_instance = instance.__getattribute__(image_field.name)
             image_center_instance = instance.__getattribute__(field.name)
             image_instance.__image_center_instance__ = image_center_instance
-            if isinstance(image_center_instance, basestring):
+            if isinstance(image_center_instance, six.string_types):
                 image_center_instance = ImageCenter(image_field, xy=image_center_instance)
                 setattr(instance, field.name, image_center_instance)
-            image_center_instance.image_path = unicode(image_instance)
+            image_center_instance.image_path = six.text_type(image_instance)
 
 post_init.connect(post_init_capture)
 

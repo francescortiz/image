@@ -1,10 +1,17 @@
 # -*- coding: UTF-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils import six
 from django.forms.utils import flatatt
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from django.core.urlresolvers import reverse
 import threading
+
 
 from image.video_field import VideoField
 
@@ -18,7 +25,7 @@ class ImageCenterFormWidget(forms.Widget):
     #    super(ImageCenterFormWidget, self).__init__(attrs)
 
     def _format_value(self, value):
-        return unicode(value)
+        return six.text_type(value)
 
     def render(self, name, value, attrs=None):
 
@@ -29,7 +36,7 @@ class ImageCenterFormWidget(forms.Widget):
         final_attrs = self.build_attrs(attrs, name=name)
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
-            final_attrs['value'] = force_unicode(self._format_value(value))
+            final_attrs['value'] = force_text(self._format_value(value))
 
         resp = ''
         if getattr(value, 'image_path', None):

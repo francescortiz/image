@@ -131,7 +131,6 @@ def image(request, path, token, autogen=False):
         try:
             crop = (mode != "scale")
             force = (enlarge == "true")
-            print(force)
             output_data = render(data, width, height, force=force, padding=padding, overlays=overlays,
                                  overlay_sources=overlay_sources, overlay_tints=overlay_tints,
                                  overlay_positions=overlay_positions, overlay_sizes=overlay_sizes, mask=mask,

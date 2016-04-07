@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import requests
+import six
 from django.core.files.base import ContentFile
 from encodings.base64_codec import base64_decode
 import os
@@ -147,7 +148,7 @@ def image(request, path, token, autogen=False):
     if response.status_code == 200:
         IMAGE_CACHE_STORAGE.save(cached_image_file,  ContentFile(output_data))
         if autogen:
-            return 'Generated ' + str(response.status_code)
+            return 'Generated ' + six.text_type(response.status_code)
     else:
         if autogen:
             return 'Failed ' + cached_image_file

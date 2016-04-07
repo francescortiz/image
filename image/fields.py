@@ -12,10 +12,10 @@ class ImageCenter(object):
     def __init__(self, image_field, x=None, y=None, xy=None):
         self.image_field = image_field
         if (not x is None and y is None) or (x is None and not y is None):
-            raise ValueError("If x or y are provided, both have to be provided: x=" + str(x) + ", y=" + str(y))
+            raise ValueError(u"If x or y are provided, both have to be provided: x=" + six.text_type(x) + u", y=" + six.text_type(y))
         if not x is None and not y is None:
             if x < 0 or x > 1 or y < 0 or y > 1:
-                raise ValueError("Valid values for x and y go from 0 to 1: x=" + str(x) + ", y=" + str(y))
+                raise ValueError(u"Valid values for x and y go from 0 to 1: x=" + six.text_type(x) + u", y=" + six.text_type(y))
             self.x = float(x)
             self.y = float(y)
         else:

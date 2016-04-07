@@ -58,7 +58,7 @@ class ImageNode(template.Node):
 
         if "autogen=true" in parameters:
             # We want the image to be generated immediately
-            image_views.image(None, str(image_field), parameters, True)
+            image_views.image(None, six.text_type(image_field), parameters, True)
 
         return IMAGE_CACHE_STORAGE.url(os.path.join(six.text_type(image_field), image_tokenize(session, parameters)))
 

@@ -87,12 +87,16 @@ Show error images instead of raising exceptions.
 
 Significant update: now you have to {% load img %} instead of {% load image %}
 
+### how to install
+
+pip install image
+add 'image' to INSTALLED_APPS
 
 ## settings variables
 
 ### Context Processors
 
-'django.core.context_processors.request' is mandatory because the image tag uses sessions.
+'django.template.context_processors.request' is mandatory because the image tag uses sessions.
 
 ### Custom settings
 
@@ -226,6 +230,7 @@ This is how ImageCenter looks in the admin section when it is editable. **Just c
 ## Dependencies
 
 * **PIL**: python imaging library is used for image manipualtion. If you want to handle transparency you need at least PIL 1.1.7
+* **requests**
 * **ffmpeg**: only if you want video thumbnails.
 
 ## Known issues
@@ -236,6 +241,7 @@ I develop as I need to. Open an issue if you need to fix something or demand any
 ## Examples
 
 Sample model:
+from image.fields import ImageCenterField
 
     class Test(models.Model):
     

@@ -12,6 +12,10 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.5.5**
+
+- Work with Django 1.10
+
 **Version 1.4.4**
 
 - Added an option to prevent enlarging images. "enlarge=false" or whatever value different than true. defaults to true for backwards compatibility.

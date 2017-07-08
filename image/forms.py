@@ -33,7 +33,10 @@ class ImageCenterFormWidget(forms.Widget):
 
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, {"name": name})
+        try:
+            final_attrs = self.build_attrs(attrs, name=name)
+        except TypeError:
+            final_attrs = self.build_attrs(attrs, {"name": name})
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(self._format_value(value))

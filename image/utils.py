@@ -14,6 +14,7 @@ from image.storage import MEDIA_STORAGE, STATIC_STORAGE
 
 
 INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT
+ALPHA_FORMATS = ["PNG"]
 
 
 def power_to_rgb(value):
@@ -537,6 +538,10 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     img = do_rotate(img, post_rotation)
 
     tmp = BytesIO()
+
+    if not format.upper() in ALPHA_FORMATS:
+        img = img.convert("RGB")
+
     img.save(tmp, format, quality=quality)
     tmp.seek(0)
     output_data = tmp.getvalue()

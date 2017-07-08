@@ -27,13 +27,13 @@ class ImageCenterFormWidget(forms.Widget):
     def _format_value(self, value):
         return six.text_type(value)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, **kwargs):
 
         global COUNTER
 
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, name=name)
+        final_attrs = self.build_attrs(attrs, {"name": name})
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(self._format_value(value))

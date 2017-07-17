@@ -208,6 +208,9 @@ def do_grayscale(img):
 
 
 def do_paste(img, overlay, position):
+    if overlay.mode != 'RGBA':
+        overlay = overlay.convert('RGBA')
+
     overlay_pixels = overlay.load()
     img_pixels = img.load()
     overlay_width, overlay_height = overlay.size

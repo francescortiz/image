@@ -14,8 +14,8 @@ def get_image_url(image, parameters):
     return reverse(
         'image.views.image',
         args=(
+            image_create_token(parameters),
             six.text_type(image),
-            image_create_token(parameters)
         )
     )
 

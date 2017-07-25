@@ -51,7 +51,8 @@ class ImageCenterFormWidget(forms.Widget):
                 extra_parms += "&is_admin=true"
 
                 resp = '<div style="display:inline-block; position:relative; border:1px solid black;">'
-                resp += '<img id="image_center-' + str(COUNTER) + '" src="' + reverse('image.views.image', args=(value.image_path, 'format=png&width=150&height=150&mode=scale' + extra_parms)) + '" onclick=""/>'
+                resp += '<img id="image_center-' + str(COUNTER) + '" src="' + reverse(
+                    'image.views.image', args=('format=png&width=150&height=150&mode=scale' + extra_parms, value.image_path)) + '" onclick=""/>'
                 resp += '<img id="image_center_crosshair-' + str(COUNTER) + '" src="' + reverse('image.views.crosshair') + '" style="position:absolute; left:0; top:0;" />'
                 resp += '</div>'
                 resp += '<script>'

@@ -31,8 +31,8 @@ def image_tokenize(session, parameters):
 
 class ImageNode(template.Node):
     def __init__(self, image_field, parameters):
-        self.image_field = template.Variable(image_field)
-        self.parameters = template.Variable(parameters)
+        self.image_field = image_field
+        self.parameters = parameters  # It is not a variable because we compiled filters.
 
     def render(self, context):
         try:
@@ -60,7 +60,8 @@ class ImageNode(template.Node):
             # We want the image to be generated immediately
             image_views.image(None, six.text_type(image_field), parameters, True)
 
-        return IMAGE_CACHE_STORAGE.url(os.path.join(six.text_type(image_field), image_tokenize(session, parameters)))
+        image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
+        return IMAGE_CACHE_STORAGE.url(image_path)
 
         # return reverse(
         #     'image.views.image',
@@ -78,5 +79,8 @@ def image(parser, token):
         tag_name, image_field, parameters = token.split_contents()
     except ValueError:
         raise template.TemplateSyntaxError("%r tag requires 2 arguments " % token.contents.split()[0])
+
+    image_field = parser.compile_filter(image_field)
+    parameters = parser.compile_filter(parameters)
 
     return ImageNode(image_field, parameters)

@@ -26,8 +26,11 @@ from image.videothumbs import generate_thumb
 
 def image(request, path, token, autogen=False):
 
+    original_token = token
+
+    has_admin_perm = request.user.has_perm('admin')
     is_admin = False
-    if ("is_admin=true" in token and request and request.user.has_perm('admin')) or autogen:
+    if ("is_admin=true" in token and request and has_admin_perm) or autogen:
         parameters = token
         is_admin = True
         if autogen:
@@ -64,6 +67,9 @@ def image(request, path, token, autogen=False):
         return response
     
     if parameters == token and not is_admin:
+        if has_admin_perm and 'is_admin=true' in path:
+            #  Retrocompatibilidad.
+            return image(request, original_token, path, autogen=autogen)
         return HttpResponse("Forbidden", status=403)
 
     qs = QueryDict(parameters)

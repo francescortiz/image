@@ -2,3 +2,5 @@
 *~
 dist
 .idea
+/build
+/image.egg-info

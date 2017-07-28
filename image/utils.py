@@ -308,14 +308,34 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
         target_y = int((ih - oh) / 2)
     else:
         tx, ty = overlay_position.split(',')
+        tx = tx.strip()
+        ty = ty.strip()
+
         if tx == "":
+            # Center horizontally.
             target_x = int((iw - ow) / 2)
         else:
-            target_x  = int(round(float(tx.strip()) * iw))
+            if "!" in tx:
+                # X origin on the right side.
+                x_percent = 1.0 - float(tx.replace("!", "").strip())
+                target_x = int(round(x_percent * iw) - ow)
+            else:
+                # X origin on the left side.
+                x_percent = float(tx)
+                target_x = int(round(x_percent * iw))
+
         if ty == "":
+            # Center vertically.
             target_y = int((ih - oh) / 2)
         else:
-            target_y  = int(round(float(ty.strip()) * ih))
+            if "!" in ty:
+                # Y origin on the bottom side.
+                y_percent = 1.0 - float(ty.replace("!", "").strip())
+                target_y = int(round(y_percent * ih) - oh)
+            else:
+                # Y origin on the top side.
+                y_percent = float(ty)
+                target_y = int(round(y_percent * ih))
 
     """
     TODO: paste seems to be buggy, because pasting over opaque background returns a non opaque image

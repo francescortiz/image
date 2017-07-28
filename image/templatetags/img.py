@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from django import template
+from django.http.request import HttpRequest
 from django.template.defaulttags import register
 from django.core.urlresolvers import reverse
 from django.db.models.fields.files import ImageFieldFile
@@ -39,6 +40,7 @@ class ImageNode(template.Node):
             request = context['request']
             session = request.session
         except KeyError:
+            request = HttpRequest()
             session = None
 
         image_field = self.image_field.resolve(context)
@@ -58,7 +60,7 @@ class ImageNode(template.Node):
 
         if "autogen=true" in parameters:
             # We want the image to be generated immediately
-            image_views.image(None, six.text_type(image_field), parameters, True)
+            image_views.image(request, six.text_type(image_field), parameters, True)
 
         image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
         return IMAGE_CACHE_STORAGE.url(image_path)

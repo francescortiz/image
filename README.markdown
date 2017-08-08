@@ -12,6 +12,35 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+
+**Version 1.5.12 (only git yet)**
+
+- Add LocallyMirroredS3BotoStorage to boost S3.
+
+**Version 1.5.11**
+
+- Allow overlays to have their origin in the bottom right corner by adding an exclamation sign to the corresponding coordinate.
+
+**Version 1.5.10**
+
+- Bug fix.
+
+**Version 1.5.9**
+
+- Swap order of arguments in the urls in order to keep original file name.
+
+**Version 1.5.8**
+
+- Bug fix.
+
+**Version 1.5.7**
+
+- Recover backwards compatibility with Django 1.8.
+
+**Version 1.5.6**
+
+- Django 1.11 compatibility.
+
 **Version 1.5.5**
 
 - Work with Django 1.10
@@ -20,18 +49,15 @@ On a more technical side, another feature of image is that **it does not use pre
 
 - Added an option to prevent enlarging images. "enlarge=false" or whatever value different than true. defaults to true for backwards compatibility.
 
-
 **Version 1.4**
 
 - Added grayscale
-
 
 **Version 1.4**
 
 - No need to tell width and height. It takes the image dimensions if they are lacking.
 - Added pre_rotation and post_rotation. Rotate the image before cropping and applying effects or after.
  
-
 **Version 1.3**
 
 - Added support for django storages
@@ -116,12 +142,22 @@ add 'image' to INSTALLED_APPS
 
 * **IMAGE_CACHE_HTTP_EXPIRATION**: (default=3600 * 24 * 30) What to say to browsers in the HTTP Response headers about cache duration.
 
+* **S3_MIRROR_ROOT**: Directory where local empty files are going to be created. Applies only when using LocallyCachedS3BotoStorage. It serves as a local cache for calls to `.exists()`.
+
 
 ### Dependency on django settings
 
 * **STATIC_ROOT / STATICFILES**: Only if you use overlay or mask.
 
 * **FILE_UPLOAD_TEMP_DIR**: Used to store temporary images when working with videos.
+
+
+## Storage
+
+### LocallyMirroredS3BotoStorage
+
+Dynamic image generation relies heavily on checking for existance of generated files. S3 is very slow when checking for existance of files. This storage is a simple wrapper that keeps a local cache ef existance of files throgh a local mirror of empty files.
+
 
 ## Custom fields
 It adds two custom fields you can use with your models:
@@ -159,6 +195,15 @@ Accepts value None (overlay_tint=None).
 ### overlay_source=media/static
 
 Where to look for overlay, either MEDIA_ROOT or STATIC_ROOT
+
+### overlay_position=X.XX/Y.YY
+
+Origin of the overlay. Centered by default. Percentage from 0.0 to 1.0. **By now it crashes if you place the overlay outside out of bounds.**
+
+### overlay_size=W.WW/H.HH
+
+Size of the overlay of the overlay. Percentage from 0.0 to 1.0. It doesn't allow distortion.
+
 
 ### Examples:
 
@@ -288,7 +333,6 @@ Sample template:
 
 ## TODO
 
-* Add the symlink-mirrored storage that allows it ot perform fast when using Amazon S3.
 * Remove the need to specify with and height for images beeing manipulated. Let the system work with the original image size.
 * Add the posibility to prevent upscaling.
 * Make it possible to set the size of the center of attention, in order to be able to make crops that only show that area.

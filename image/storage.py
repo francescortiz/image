@@ -1,6 +1,17 @@
 # coding=UTF-8
+import os
+
+import sys
 from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
 from django.core.files.storage import get_storage_class, FileSystemStorage
+
+try:
+    from storages.backends.s3boto import S3BotoStorage
+
+    BOTO_IS_AVAILABLE = True
+except ImportError:
+    BOTO_IS_AVAILABLE = False
 
 from image import settings
 from image.settings import IMAGE_CACHE_STORAGE, STATICFILES_STORAGE
@@ -9,36 +20,40 @@ __author__ = 'franki'
 
 STORAGE = None
 
+if BOTO_IS_AVAILABLE:
+    class LocallyMirroredS3BotoStorage(S3BotoStorage):
+        def __init__(self, *args, **kwargs):
+            super(LocallyMirroredS3BotoStorage, self).__init__(*args, **kwargs)
+            self.mirror = FileSystemStorage(location=settings.S3_MIRROR_ROOT)
 
-class LocallyMirroredS3BotoStorage(S3BotoStorage):
-    def __init__(self, *args, **kwargs):
-        super(LocallyMirroredS3BotoStorage, self).__init__(*args, **kwargs)
-        self.mirror = FileSystemStorage(location=settings.S3_MIRROR_ROOT)
+        def delete(self, name):
+            super(LocallyMirroredS3BotoStorage, self).delete(name)
+            try:
+                self.mirror.delete(name)
+            except OSError:
+                full_path = self.mirror.path(name)
+                if os.path.exists(full_path):
+                    os.rmdir(full_path)
 
-    def delete(self, name):
-        super(LocallyMirroredS3BotoStorage, self).delete(name)
-        try:
-            self.mirror.delete(name)
-        except OSError:
-            full_path = self.mirror.path(name)
-            if os.path.exists(full_path):
-                os.rmdir(full_path)
-
-    def exists(self, name):
-        exists_local = self.mirror.exists(name)
-        if exists_local:
-            return True
-        else:
-            exists_remote = super(LocallyMirroredS3BotoStorage, self).exists(name)
-            if exists_remote:
-                self.mirror._save(name, ContentFile(""))
+        def exists(self, name):
+            exists_local = self.mirror.exists(name)
+            if exists_local:
                 return True
-        return False
+            else:
+                exists_remote = super(LocallyMirroredS3BotoStorage, self).exists(name)
+                if exists_remote:
+                    self.mirror._save(name, ContentFile(""))
+                    return True
+            return False
 
-    def _save(self, name, content):
-        cleaned_name = super(LocallyMirroredS3BotoStorage, self)._save(name, content)
-        self.mirror._save(name, ContentFile(""))
-        return cleaned_name
+        def _save(self, name, content):
+            cleaned_name = super(LocallyMirroredS3BotoStorage, self)._save(name, content)
+            self.mirror._save(name, ContentFile(""))
+            return cleaned_name
+else:
+    class LocallyMirroredS3BotoStorage(S3BotoStorage):
+        def __init__(self, *args, **kwargs):
+            raise ImportError("In order to use LocallyMirroredS3BotoStorage you need to install django-storages")
 
 
 class ImageCacheStorage(FileSystemStorage):

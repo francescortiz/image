@@ -211,53 +211,57 @@ def do_paste(img, overlay, position):
     if overlay.mode != 'RGBA':
         overlay = overlay.convert('RGBA')
 
-    overlay_pixels = overlay.load()
-    img_pixels = img.load()
-    overlay_width, overlay_height = overlay.size
-    x_offset, y_offset = position
+    r, g, b, a = img.split()
+    img.paste(overlay, position, overlay)
+    img.putalpha(a)
 
-    for y in range(min(overlay_height, img.size[1] - y_offset)):
-        for x in range(min(overlay_width, img.size[0] - x_offset)):
-            img_pixel = img_pixels[x + x_offset, y + y_offset]
-            overlay_pixel = overlay_pixels[x, y]
-            ia = img_pixel[3]
-            oa = overlay_pixel[3]
-            if oa == 0:
-                # overlay is transparent, nothing to do
-                continue
-            elif oa == 255:
-                # overlay is opaque, ignore img pixel
-                new_pixel = overlay_pixel
-            elif ia == 0:
-                # image pixel is 100% transparent, only overlay matters 
-                new_pixel = overlay_pixel
-            elif ia == 255:
-                # simpler math
-                oa = float(oa) / 255.0
-                oa1 = 1.0 - oa
-                new_pixel = (
-                             int(power_to_rgb( rgb_to_power(img_pixel[0]) * oa1 + rgb_to_power(overlay_pixel[0]) * oa  )),
-                             int(power_to_rgb( rgb_to_power(img_pixel[1]) * oa1 + rgb_to_power(overlay_pixel[1]) * oa  )),
-                             int(power_to_rgb( rgb_to_power(img_pixel[2]) * oa1 + rgb_to_power(overlay_pixel[2]) * oa  )),
-                             255,
-                             )
-            else:
-                # complex math
-                oa = float(oa) / 255.0
-                ia = float(ia) / 255.0
-                oa1 = 1 - oa
-                #total_alpha_percent = oa + ia
-                overlay_percent = oa
-                image_percent = ia * oa1
-
-                new_pixel = (
-                             int(power_to_rgb( rgb_to_power(img_pixel[0]) * image_percent + rgb_to_power(overlay_pixel[0]) * overlay_percent  )),
-                             int(power_to_rgb( rgb_to_power(img_pixel[1]) * image_percent + rgb_to_power(overlay_pixel[1]) * overlay_percent  )),
-                             int(power_to_rgb( rgb_to_power(img_pixel[2]) * image_percent + rgb_to_power(overlay_pixel[2]) * overlay_percent  )),
-                             int((oa + ia * oa1) * 255.0),
-                             )
-
-            img_pixels[x + x_offset, y + y_offset] = new_pixel
+    # overlay_pixels = overlay.load()
+    # img_pixels = img.load()
+    # overlay_width, overlay_height = overlay.size
+    # x_offset, y_offset = position
+    #
+    # for y in range(min(overlay_height, img.size[1] - y_offset)):
+    #     for x in range(min(overlay_width, img.size[0] - x_offset)):
+    #         img_pixel = img_pixels[x + x_offset, y + y_offset]
+    #         overlay_pixel = overlay_pixels[x, y]
+    #         ia = img_pixel[3]
+    #         oa = overlay_pixel[3]
+    #         if oa == 0:
+    #             # overlay is transparent, nothing to do
+    #             continue
+    #         elif oa == 255:
+    #             # overlay is opaque, ignore img pixel
+    #             new_pixel = overlay_pixel
+    #         elif ia == 0:
+    #             # image pixel is 100% transparent, only overlay matters
+    #             new_pixel = overlay_pixel
+    #         elif ia == 255:
+    #             # simpler math
+    #             oa = float(oa) / 255.0
+    #             oa1 = 1.0 - oa
+    #             new_pixel = (
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[0]) * oa1 + rgb_to_power(overlay_pixel[0]) * oa  )),
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[1]) * oa1 + rgb_to_power(overlay_pixel[1]) * oa  )),
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[2]) * oa1 + rgb_to_power(overlay_pixel[2]) * oa  )),
+    #                          255,
+    #                          )
+    #         else:
+    #             # complex math
+    #             oa = float(oa) / 255.0
+    #             ia = float(ia) / 255.0
+    #             oa1 = 1 - oa
+    #             #total_alpha_percent = oa + ia
+    #             overlay_percent = oa
+    #             image_percent = ia * oa1
+    #
+    #             new_pixel = (
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[0]) * image_percent + rgb_to_power(overlay_pixel[0]) * overlay_percent  )),
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[1]) * image_percent + rgb_to_power(overlay_pixel[1]) * overlay_percent  )),
+    #                          int(power_to_rgb( rgb_to_power(img_pixel[2]) * image_percent + rgb_to_power(overlay_pixel[2]) * overlay_percent  )),
+    #                          int((oa + ia * oa1) * 255.0),
+    #                          )
+    #
+    #         img_pixels[x + x_offset, y + y_offset] = new_pixel
 
 
 def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overlay_size=None, overlay_position=None):
@@ -342,9 +346,6 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
     (the parts that are not 100% opaque or 100% transparent become partially transparent. 
     the putalpha workareound doesn't seem to look nice enough
     """
-    #r, g, b, a = img.split()
-    #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
-    #img.putalpha(a)
     do_paste(img, overlay, (target_x, target_y))
 
     return img

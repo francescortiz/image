@@ -5,3 +5,4 @@ dist
 /build
 /image.egg-info
 /test_project/__storage__/
+/test_project/db.sqlite3

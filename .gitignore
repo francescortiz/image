@@ -4,3 +4,4 @@ dist
 .idea
 /build
 /image.egg-info
+/test_project/__storage__/

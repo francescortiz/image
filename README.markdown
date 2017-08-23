@@ -16,6 +16,7 @@ On a more technical side, another feature of image is that **it does not use pre
 **Version 1.5.12 (only git yet)**
 
 - Add LocallyMirroredS3BotoStorage to boost S3.
+- Use the ManifestStaticFilesStrategy in order to allow very far future browser cache. Now that Chrome strictly respects cache headers, it makes sense.
 
 **Version 1.5.11**
 

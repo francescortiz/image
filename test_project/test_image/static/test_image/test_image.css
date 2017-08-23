@@ -1,0 +1,14 @@
+.test-alpha {
+  background: green;
+  padding: 10px; }
+
+.test-alpha-html {
+  width: 640px;
+  height: 200px;
+  background-image: url(alpha_gradient.png), url(red.png); }
+
+.test-alpha-img {
+  width: 640px;
+  height: 200px; }
+
+/*# sourceMappingURL=test_image.css.map */

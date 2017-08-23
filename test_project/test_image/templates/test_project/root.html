@@ -1,0 +1,19 @@
+{% load img static %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Image test project</title>
+    <link rel="stylesheet" href="{% static "test_image/test_image.css" %}">
+</head>
+<body>
+<div class="test-alpha">
+    <div class="test-alpha-html"></div>
+
+    <img class="test-alpha-img"
+         src="{% image "test_image/red.png" "static=true&width=640&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static" %}">
+</div>
+</body>
+</html>

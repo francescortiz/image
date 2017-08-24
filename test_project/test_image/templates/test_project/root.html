@@ -9,11 +9,44 @@
     <link rel="stylesheet" href="{% static "test_image/test_image.css" %}">
 </head>
 <body>
+<h2>
+    Alpha gradient: CSS vs image
+</h2>
 <div class="test-alpha">
     <div class="test-alpha-html"></div>
 
     <img class="test-alpha-img"
          src="{% image "test_image/red.png" "static=true&width=640&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static" %}">
+</div>
+<div class="test-overlay">
+    <h2>
+        Overlay: different sizes and aligment
+    </h2>
+    <p>
+        Size 50% 50% (does not distort).
+    </p>
+    <img class=""
+         src="{% image "test_image/red.png" "static=true&width=200&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5" %}">
+    <p>
+        Positon 5% 5%.
+    </p>
+    <img class=""
+         src="{% image "test_image/red.png" "static=true&width=200&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5&overlay_position=.05,.05" %}">
+    <p>
+        Positon from bottom and from right.
+    </p>
+    <img class=""
+         src="{% image "test_image/red.png" "static=true&width=200&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5&overlay_position=.05!,.05!" %}">
+    <p>
+        Positon out of bounds.
+    </p>
+    <img class=""
+         src="{% image "test_image/red.png" "static=true&width=200&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5&overlay_position=.80,.80" %}">
+    <p>
+        Múltiple overlays.
+    </p>
+    <img class=""
+         src="{% image "test_image/red.png" "static=true&width=200&height=200&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5&overlay_position=.05,.05!&overlay=test_image/alpha_gradient.png&overlay_source=static&overlay_size=.5,.5&overlay_position=.05!,.05" %}">
 </div>
 </body>
 </html>

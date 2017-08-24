@@ -5,5 +5,5 @@ from image import views
 
 urlpatterns = [
     url(r'^crosshair$', views.crosshair, name="image.views.crosshair"),
-    url(r'^(?P<token>[\w_=&]+)/(?P<path>.+)$', views.image, name="image.views.image"),
+    url(r'^(?P<token>[\-\w_=&]+)/(?P<path>.+)$', views.image, name="image.views.image"),
 ]

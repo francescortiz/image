@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
+
 import requests
 import six
 from django.core.files.base import ContentFile
@@ -27,6 +29,7 @@ from image.videothumbs import generate_thumb
 def image(request, path, token, autogen=False):
 
     original_token = token
+    token = original_token.split('-')[0]
 
     has_admin_perm = request.user.has_perm('admin')
     is_admin = False
@@ -152,7 +155,7 @@ def image(request, path, token, autogen=False):
         output_data = data
 
     if response.status_code == 200:
-        IMAGE_CACHE_STORAGE.save(cached_image_file,  ContentFile(output_data))
+        IMAGE_CACHE_STORAGE.save(cached_image_file,  output_data, )
         if autogen:
             return 'Generated ' + six.text_type(response.status_code)
     else:

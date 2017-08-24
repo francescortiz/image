@@ -58,7 +58,7 @@ class ImageNode(template.Node):
             except AttributeError:
                 pass
 
-        if "autogen=true" in parameters:
+        if "autogen=true" in parameters or getattr(IMAGE_CACHE_STORAGE, "autogen_required", False):
             # We want the image to be generated immediately
             image_views.image(request, six.text_type(image_field), parameters, True)
 

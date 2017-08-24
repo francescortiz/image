@@ -14,7 +14,7 @@ except (ImportError, ImproperlyConfigured):
     BOTO_IS_AVAILABLE = False
 
 from image import settings
-from image.settings import IMAGE_CACHE_STORAGE, STATICFILES_STORAGE
+from image.settings import IMAGE_CACHE_STORAGE as settings_IMAGE_CACHE_STORAGE, STATICFILES_STORAGE
 
 __author__ = 'franki'
 
@@ -76,8 +76,8 @@ def get_storage():
     global STORAGE
     if STORAGE:
         return STORAGE
-    if IMAGE_CACHE_STORAGE:
-        storage_class = get_storage_class(IMAGE_CACHE_STORAGE)
+    if settings_IMAGE_CACHE_STORAGE:
+        storage_class = get_storage_class(settings_IMAGE_CACHE_STORAGE)
     else:
         storage_class = get_storage_class()
     STORAGE = storage_class()

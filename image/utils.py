@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.utils import six
+from django.utils import six, lru_cache
 from PIL import Image as pil
 from django.utils.six import StringIO, BytesIO
 import hashlib
@@ -61,6 +61,7 @@ def add_rgba_to_pixel(pixel, rgba, x_ammount, x_displacement):
                 )
 
 
+@lru_cache.lru_cache(maxsize=128)
 def image_create_token(parameters):
     return "image_token_%s" % hashlib.sha1(parameters.encode("utf8")).hexdigest()
 

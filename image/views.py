@@ -29,7 +29,7 @@ from image.videothumbs import generate_thumb
 def image(request, path, token, autogen=False):
 
     original_token = token
-    token = original_token.split('-')[0]
+    token = original_token.split("-:-")[0]
 
     has_admin_perm = request.user.has_perm('admin')
     is_admin = False

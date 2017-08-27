@@ -100,7 +100,7 @@ class ManifestImageCacheStorage(ManifestStaticFilesStorage):
 
     def hashed_name(self, name, content=None, filename=None):
         md5sum = hashlib.md5(content).hexdigest()
-        return name + "-" + md5sum
+        return name + "-:-" + md5sum
 
     def get_available_name(self, name, **kwargs):
         if self.exists(name):
@@ -111,7 +111,7 @@ class ManifestImageCacheStorage(ManifestStaticFilesStorage):
         cached_image_file = IMAGE_CACHE_STORAGE.hashed_name(name, content)
         if self.exists(cached_image_file):
             self.delete(cached_image_file)
-        super(ManifestImageCacheStorage, self).save(name, ContentFile(content), max_length=max_length)
+        super(ManifestImageCacheStorage, self).save(cached_image_file, ContentFile(content), max_length=max_length)
         self.hashed_files[name] = cached_image_file
         self.hashed_files[os.path.join(basename(name), dirname(name))] = os.path.join(basename(cached_image_file),
                                                                                       dirname(cached_image_file))

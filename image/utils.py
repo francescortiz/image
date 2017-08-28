@@ -212,9 +212,9 @@ def do_paste(img, overlay, position):
     if overlay.mode != 'RGBA':
         overlay = overlay.convert('RGBA')
 
-    r, g, b, a = img.split()
+    # r, g, b, a = img.split()
     img.paste(overlay, position, overlay)
-    img.putalpha(a)
+    # img.putalpha(a)
 
     # overlay_pixels = overlay.load()
     # img_pixels = img.load()

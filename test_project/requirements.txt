@@ -1,3 +1,5 @@
+django
+pillow
 requests
 django-storages
 six

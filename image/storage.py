@@ -83,6 +83,7 @@ class ImageCacheStorage(FileSystemStorage):
 
 class ManifestImageCacheStorage(ManifestStaticFilesStorage):
     autogen_required = True
+    hashed_filesystem = True
 
     def __init__(self, location=None, base_url=None, *args, **kwargs):
         if location is None:
@@ -119,7 +120,7 @@ class ManifestImageCacheStorage(ManifestStaticFilesStorage):
 
     def url(self, name, force=False):
         actual_name = self.hashed_files[name]
-        return super(ManifestImageCacheStorage, self).url(actual_name)
+        return os.path.join(self.base_url, actual_name)
 
 
 def get_storage():

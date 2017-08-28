@@ -212,9 +212,16 @@ def do_paste(img, overlay, position):
     if overlay.mode != 'RGBA':
         overlay = overlay.convert('RGBA')
 
-    # r, g, b, a = img.split()
-    img.paste(overlay, position, overlay)
-    # img.putalpha(a)
+    # img.paste(overlay, position, overlay)
+    # return img
+
+    overlay_full = pil.new('RGBA', img.size, color=(255, 255, 255, 0))
+    overlay_full.paste(overlay, position)
+
+    # img.paste(overlay_full, (0,0), overlay_full)
+    # return img
+
+    return pil.alpha_composite(img, overlay_full)
 
     # overlay_pixels = overlay.load()
     # img_pixels = img.load()
@@ -347,7 +354,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
     (the parts that are not 100% opaque or 100% transparent become partially transparent. 
     the putalpha workareound doesn't seem to look nice enough
     """
-    do_paste(img, overlay, (target_x, target_y))
+    img = do_paste(img, overlay, (target_x, target_y))
 
     return img
 
@@ -386,8 +393,10 @@ def do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, ov
         if overlay_position == "None":
             overlay_position = None
 
-        do_overlay(img, overlay, overlay_source, overlay_tint, overlay_size, overlay_position)
+        img = do_overlay(img, overlay, overlay_source, overlay_tint, overlay_size, overlay_position)
         overlay_index += 1
+
+    return img
 
 
 def do_mask(img, mask_path, mask_source, mask_mode=None):
@@ -426,7 +435,7 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
             nmask = mask.resize((ow, oh), pil.ANTIALIAS)
             mask = pil.new('RGBA', (iw, ih))
             #mask.paste(nmask, (int((iw - ow) / 2), int((ih - oh) / 2)), nmask)
-            do_paste(mask, nmask, (int((iw - ow) / 2), int((ih - oh) / 2)))
+            mask = do_paste(mask, nmask, (int((iw - ow) / 2), int((ih - oh) / 2)))
             ow, oh = mask.size
 
     r, g, b, a = mask.split()
@@ -451,7 +460,7 @@ def do_fill(img, fill, width, height):
     ow, oh = overlay.size
 
     #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
-    do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
+    img = do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
 
     return img
 
@@ -501,7 +510,7 @@ def do_background(img, background):
     ow, oh = overlay.size
 
     #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
-    do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
+    img = do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
 
     return img
 
@@ -558,7 +567,7 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     img = do_fill(img, fill, width, height)
     img = do_background(img, background)
     do_mask(img, mask, mask_source)
-    do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions)
+    img = do_overlays(img, overlays, overlay_tints, overlay_sources, overlay_sizes, overlay_positions)
     img = do_padding(img, padding)
     img = do_rotate(img, post_rotation)
 

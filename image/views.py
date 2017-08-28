@@ -43,9 +43,6 @@ def image(request, path, token, autogen=False):
 
     cached_image_file = os.path.join(path, token)
 
-    if getattr(IMAGE_CACHE_STORAGE, "hashed_filesystem", False):
-        cached_image_file = IMAGE_CACHE_STORAGE.hashed_files.get(cached_image_file, cached_image_file)
-
     now = timezone.now()
     expire_offset = timezone.timedelta(seconds=IMAGE_CACHE_HTTP_EXPIRATION)
 

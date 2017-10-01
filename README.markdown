@@ -12,11 +12,13 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.5.16**
+- Add a function named after image.utils.image_url that generates an image url.
+
 
 **Version 1.5.12**
 
 - Add LocallyMirroredS3BotoStorage to boost S3.
-- Use the ManifestStaticFiles strategy in order to allow very far future browser cache. Now that Chrome strictly respects cache headers, it makes sense.
 
 **Version 1.5.11**
 

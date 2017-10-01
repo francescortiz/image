@@ -3,15 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.utils import six, lru_cache
-from PIL import Image as pil
-from django.utils.six import StringIO, BytesIO
 import hashlib
+import os
+
+from PIL import Image as pil
+from django.utils import six, lru_cache
+from django.utils.six import StringIO, BytesIO
 
 from image import settings
 from image.settings import IMAGE_DEFAULT_QUALITY, IMAGE_DEFAULT_FORMAT
-from image.storage import MEDIA_STORAGE, STATIC_STORAGE
-
+from image.storage import MEDIA_STORAGE, STATIC_STORAGE, IMAGE_CACHE_STORAGE
 
 INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT
 ALPHA_FORMATS = ["PNG"]
@@ -30,7 +31,7 @@ def rgb_to_power(value):
     if value <= 0.04045:
         value /= 12.92
     else:
-        value = pow( (value + 0.055) / 1.055  , 2.4)
+        value = pow((value + 0.055) / 1.055, 2.4)
     return value
 
 
@@ -42,28 +43,23 @@ def add_rgba_to_pixel(pixel, rgba, x_ammount, x_displacement):
         rgba_ammount = x_ammount / total_ammount
         pixel_ammount = x_displacement / total_ammount
         return (
-                pixel[0] * pixel_ammount + rgba[0] * rgba_ammount,
-                pixel[1] * pixel_ammount + rgba[1] * rgba_ammount,
-                pixel[2] * pixel_ammount + rgba[2] * rgba_ammount,
-                pa * pixel_ammount + a * rgba_ammount,
-                )
+            pixel[0] * pixel_ammount + rgba[0] * rgba_ammount,
+            pixel[1] * pixel_ammount + rgba[1] * rgba_ammount,
+            pixel[2] * pixel_ammount + rgba[2] * rgba_ammount,
+            pa * pixel_ammount + a * rgba_ammount,
+        )
     else:
         total_ammount = x_ammount + x_displacement
         rgba_ammount = x_ammount / total_ammount
-        #rgba_ammount_alpha = rgba_ammount * a
+        # rgba_ammount_alpha = rgba_ammount * a
         pixel_ammount = x_displacement / total_ammount
-        #pixel_ammount_alpha = pixel_ammount * pa
+        # pixel_ammount_alpha = pixel_ammount * pa
         return (
-                pixel[0] * pixel_ammount + rgba[0] * rgba_ammount,
-                pixel[1] * pixel_ammount + rgba[1] * rgba_ammount,
-                pixel[2] * pixel_ammount + rgba[2] * rgba_ammount,
-                pa * pixel_ammount + a * rgba_ammount,
-                )
-
-
-@lru_cache.lru_cache(maxsize=128)
-def image_create_token(parameters):
-    return "image_token_%s" % hashlib.sha1(parameters.encode("utf8")).hexdigest()
+            pixel[0] * pixel_ammount + rgba[0] * rgba_ammount,
+            pixel[1] * pixel_ammount + rgba[1] * rgba_ammount,
+            pixel[2] * pixel_ammount + rgba[2] * rgba_ammount,
+            pa * pixel_ammount + a * rgba_ammount,
+        )
 
 
 def resizeScale(img, width, height, force):
@@ -133,14 +129,14 @@ def resizeCrop(img, width, height, center, force):
             src_height - crop_height
         )
 
-        img = img.crop((int(x_offset), int(y_offset), int(x_offset) + int(crop_width), int(y_offset) + int(crop_height)))
+        img = img.crop(
+            (int(x_offset), int(y_offset), int(x_offset) + int(crop_width), int(y_offset) + int(crop_height)))
         img = img.resize((int(dst_width), int(dst_height)), pil.ANTIALIAS)
 
     return img
 
 
 def do_tint(img, tint):
-
     if not tint or tint is 'None':
         return
 
@@ -434,7 +430,7 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
         if have_to_scale:
             nmask = mask.resize((ow, oh), pil.ANTIALIAS)
             mask = pil.new('RGBA', (iw, ih))
-            #mask.paste(nmask, (int((iw - ow) / 2), int((ih - oh) / 2)), nmask)
+            # mask.paste(nmask, (int((iw - ow) / 2), int((ih - oh) / 2)), nmask)
             mask = do_paste(mask, nmask, (int((iw - ow) / 2), int((ih - oh) / 2)))
             ow, oh = mask.size
 
@@ -454,12 +450,12 @@ def do_fill(img, fill, width, height):
         int("0x%s" % fill[4:6], 16),
         int("0x%s" % fill[6:8], 16),
     )
-    img = pil.new("RGBA", (width,height), fill_color)
+    img = pil.new("RGBA", (width, height), fill_color)
 
     iw, ih = img.size
     ow, oh = overlay.size
 
-    #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
+    # img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
     img = do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
 
     return img
@@ -469,7 +465,7 @@ def do_padding(img, padding):
     if not padding:
         return img
     try:
-        padding = float(padding)*2.0
+        padding = float(padding) * 2.0
         if padding > .9:
             padding = .9
         if padding <= 0.0:
@@ -481,11 +477,11 @@ def do_padding(img, padding):
 
     img.thumbnail(
         (
-            int( round( float(img.size[0]) * (1.0 - padding) ) ),
-            int( round( float(img.size[1]) * (1.0 - padding) ) )
+            int(round(float(img.size[0]) * (1.0 - padding))),
+            int(round(float(img.size[1]) * (1.0 - padding)))
         ),
         pil.ANTIALIAS
-        )
+    )
 
     img = do_fill(img, "ffffff00", iw, ih)
 
@@ -509,7 +505,7 @@ def do_background(img, background):
     iw, ih = img.size
     ow, oh = overlay.size
 
-    #img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
+    # img.paste(overlay, (int((iw - ow) / 2), int((ih - oh) / 2)), overlay)
     img = do_paste(img, overlay, (int((iw - ow) / 2), int((ih - oh) / 2)))
 
     return img
@@ -527,15 +523,15 @@ def do_rotate(img, rotation):
     if rotation % 90 == 0:
         img = img.rotate(rotation, pil.NEAREST, expand=True)
     else:
-        img = img.rotate(rotation, pil.BICUBIC , expand=True)
+        img = img.rotate(rotation, pil.BICUBIC, expand=True)
 
     return img
 
 
 def render(data, width, height, force=True, padding=None, overlays=(), overlay_sources=(),
-                 overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None,
-                 center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None,
-                 tint=None, pre_rotation=None, post_rotation=None, crop=True, grayscale=False):
+           overlay_tints=(), overlay_sizes=None, overlay_positions=None, mask=None, mask_source=None,
+           center=".5,.5", format=IMAGE_DEFAULT_FORMAT, quality=IMAGE_DEFAULT_QUALITY, fill=None, background=None,
+           tint=None, pre_rotation=None, post_rotation=None, crop=True, grayscale=False):
     """
     Rescale the given image, optionally cropping it to make sure the result image has the specified width and height.
     """
@@ -584,3 +580,27 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
 
     return output_data
 
+
+@lru_cache.lru_cache(maxsize=128)
+def image_create_token(parameters):
+    return "image_token_%s" % hashlib.sha1(parameters.encode("utf8")).hexdigest()
+
+
+def image_tokenize(session, parameters):
+    if session:
+        token = None
+        for k, v in session.items():
+            if v == parameters:
+                token = k
+                break
+        if token is None:
+            token = image_create_token(parameters)
+            session[token] = parameters
+    else:
+        token = image_create_token(parameters)
+    return token
+
+
+def image_url(session, parameters, image_field):
+    image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
+    return IMAGE_CACHE_STORAGE.url(image_path)

@@ -1,33 +1,15 @@
 # -*- coding: UTF-8 -*-
 
 from django import template
+from django.db.models.fields.files import ImageFieldFile
 from django.http.request import HttpRequest
 from django.template.defaulttags import register
-from django.core.urlresolvers import reverse
-from django.db.models.fields.files import ImageFieldFile
-import os
-
 from django.utils import six
 
-from image.storage import IMAGE_CACHE_STORAGE
-from image.video_field import VideoFieldFile
 from image import views as image_views
-from image.utils import image_create_token
-
-
-def image_tokenize(session, parameters):
-    if session:
-        token = None
-        for k, v in session.items():
-            if v == parameters:
-                token = k
-                break
-        if token is None:
-            token = image_create_token(parameters)
-            session[token] = parameters
-    else:
-        token = image_create_token(parameters)
-    return token
+from image.storage import IMAGE_CACHE_STORAGE
+from image.utils import image_url
+from image.video_field import VideoFieldFile
 
 
 class ImageNode(template.Node):
@@ -62,8 +44,9 @@ class ImageNode(template.Node):
             # We want the image to be generated immediately
             image_views.image(request, six.text_type(image_field), parameters, True)
 
-        image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
-        return IMAGE_CACHE_STORAGE.url(image_path)
+        # image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
+        # return IMAGE_CACHE_STORAGE.url(image_path)
+        return image_url(session, parameters, image_field)
 
         # return reverse(
         #     'image.views.image',

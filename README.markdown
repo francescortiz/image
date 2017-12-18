@@ -12,9 +12,11 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
+**Version 1.5.17**
+- Django 2.0 compatibility.
+
 **Version 1.5.16**
 - Add a function named after image.utils.image_url that generates an image url.
-
 
 **Version 1.5.12**
 

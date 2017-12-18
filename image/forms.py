@@ -9,7 +9,10 @@ from django.utils.safestring import mark_safe
 from django.utils import six
 from django.forms.utils import flatatt
 from django.utils.encoding import force_text
-from django.core.urlresolvers import reverse
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
 import threading
 
 

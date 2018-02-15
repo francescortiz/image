@@ -94,9 +94,9 @@ class ImageCenterFormField(forms.Field):
 
     widget = ImageCenterFormWidget
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs['required'] = False
-        super(ImageCenterFormField, self).__init__(kwargs)
+        super(ImageCenterFormField, self).__init__(*args, **kwargs)
 
     def clean(self, value):
         value = self.to_python(value)

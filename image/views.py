@@ -66,7 +66,12 @@ def image(request, path, token, autogen=False):
         response.write(f.read())
         f.close()
 
-        response['Last-Modified'] = IMAGE_CACHE_STORAGE.modified_time(cached_image_file).strftime("%a, %d %b %Y %T GMT")
+        try:
+            # Django 2.0 support
+            modified_time = IMAGE_CACHE_STORAGE.get_modified_time(cached_image_file)
+        except AttributeError:
+            modified_time = IMAGE_CACHE_STORAGE.modified_time(cached_image_file)
+        response['Last-Modified'] = modified_time.strftime("%a, %d %b %Y %T GMT")
         return response
     
     if parameters == token and not is_admin:

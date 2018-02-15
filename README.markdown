@@ -12,9 +12,9 @@ On a more technical side, another feature of image is that **it does not use pre
 
 ### What's new
 
-**Version 1.5.18**
+**Version 1.5.18-1.5.19**
 
-- Bugfix
+- Bugfix for django 2.0 compatibility.
 
 **Version 1.5.17**
 

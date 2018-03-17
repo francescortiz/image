@@ -80,7 +80,7 @@ class ImageCenterField(models.Field):
         return ImageCenter(self.image_field, xy=value)
 
     def value_to_string(self, obj):
-        value = self._get_val_from_obj(obj)
+        value = getattr(obj, self.attname)
         return self.get_db_prep_value(value)
 
     def query_string(self):

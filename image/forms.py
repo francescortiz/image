@@ -60,7 +60,7 @@ class ImageCenterFormWidget(forms.Widget):
                 resp += '</div>'
                 resp += '<script>'
                 resp += '(function($) {'
-                resp += '    $(window).load(function(){'
+                resp += '    $(window).on("load", function(){'
                 resp += '        var crosshair = document.getElementById("image_center_crosshair-' + str(COUNTER) + '");'
                 resp += '        var image = document.getElementById("image_center-' + str(COUNTER) + '");'
                 resp += '        var iw = $(image).width();'

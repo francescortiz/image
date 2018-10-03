@@ -31,8 +31,10 @@ class ImageCenter(object):
                 self.x = float(x)
                 self.y = float(y)
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.x) + "," + str(self.y)
+
+    __unicode__ = __str__
 
 
 class ImageCenterField(models.Field):

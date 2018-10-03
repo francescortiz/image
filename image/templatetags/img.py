@@ -36,7 +36,7 @@ class ImageNode(template.Node):
 
         if isinstance(image_field, ImageFieldFile) or isinstance(image_field, VideoFieldFile):
             try:
-                parameters = parameters + "&center=" + image_field.__image_center_instance__.__unicode__()
+                parameters = parameters + "&center=" + image_field.__image_center_instance__.__str__()
             except AttributeError:
                 pass
 

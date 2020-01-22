@@ -601,12 +601,12 @@ def image_tokenize(session, parameters):
     return token
 
 
-def image_url(session, parameters, image_field, generate=False):
+def image_url(request, parameters, image_field, generate=False):
     if generate:
         from image import views as image_views
 
         autogen = 'autogen=true' in parameters
-        image_views.image(session, str(image_field), parameters, autogen)
+        image_views.image(request=request, path=str(image_field), token=parameters, autogen=autogen)
 
-    image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
+    image_path = os.path.join(image_tokenize(request.session, parameters), six.text_type(image_field))
     return IMAGE_CACHE_STORAGE.url(image_path)

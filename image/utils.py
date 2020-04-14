@@ -138,7 +138,7 @@ def resizeCrop(img, width, height, center, force):
 
 
 def do_tint(img, tint):
-    if not tint or tint is 'None':
+    if not tint or tint == 'None':
         return
 
     if img.mode != "RGBA":

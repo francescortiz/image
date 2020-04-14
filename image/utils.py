@@ -7,7 +7,7 @@ import hashlib
 import os
 
 from PIL import Image as pil
-from django.utils import lru_cache
+from functools import lru_cache
 import six
 from six import StringIO, BytesIO
 

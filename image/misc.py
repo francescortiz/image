@@ -4,10 +4,10 @@ try:
     from django.core.urlresolvers import reverse
 except ImportError:
     from django.urls import reverse
-from django.utils import six
+import six
 
-from image.views import image as image_view
 from image.utils import image_create_token
+from image.views import image as image_view
 
 
 def get_image_url(image, parameters):

@@ -3,7 +3,7 @@
 django-videothumbs
 """
 
-from django.utils.six import StringIO
+from six import StringIO
 from django.conf.global_settings import FILE_UPLOAD_TEMP_DIR
 import math
 import os

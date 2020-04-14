@@ -4,11 +4,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import six
 from django import forms
-from django.utils.safestring import mark_safe
-from django.utils import six
 from django.forms.utils import flatatt
 from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
+
 try:
     from django.core.urlresolvers import reverse
 except ImportError:

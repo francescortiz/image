@@ -1,11 +1,10 @@
 # -*- coding: UTF-8 -*-
+import six
 from django.db import models
 from django.db.models.signals import post_init
-from django.db.models.fields import FieldDoesNotExist
-from django.utils import six
 
-from image.video_field import VideoField
 from image.forms import ImageCenterFormField
+from image.video_field import VideoField
 
 
 class ImageCenter(object):

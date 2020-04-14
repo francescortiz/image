@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 
+import six
 from django import template
 from django.db.models.fields.files import ImageFieldFile
 from django.http.request import HttpRequest
 from django.template.defaulttags import register
-from django.utils import six
 
 from image import views as image_views
 from image.storage import IMAGE_CACHE_STORAGE

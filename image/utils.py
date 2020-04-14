@@ -7,8 +7,9 @@ import hashlib
 import os
 
 from PIL import Image as pil
-from django.utils import six, lru_cache
-from django.utils.six import StringIO, BytesIO
+from django.utils import lru_cache
+import six
+from six import StringIO, BytesIO
 
 from image import settings
 from image.settings import IMAGE_DEFAULT_QUALITY, IMAGE_DEFAULT_FORMAT

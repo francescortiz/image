@@ -20,10 +20,8 @@ class ImageNode(template.Node):
     def render(self, context):
         try:
             request = context['request']
-            session = request.session
         except KeyError:
             request = HttpRequest()
-            session = None
 
         image_field = self.image_field.resolve(context)
         try:
@@ -46,7 +44,7 @@ class ImageNode(template.Node):
 
         # image_path = os.path.join(image_tokenize(session, parameters), six.text_type(image_field))
         # return IMAGE_CACHE_STORAGE.url(image_path)
-        return image_url(session, parameters, image_field)
+        return image_url(request, parameters, image_field)
 
         # return reverse(
         #     'image.views.image',

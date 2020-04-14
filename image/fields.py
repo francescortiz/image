@@ -105,7 +105,7 @@ post_init.connect(post_init_capture)
 
 try:
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^image\.fields\.ImageCenterField$"])
-    add_introspection_rules([], ["^image\.video_field\.VideoField$"])
+    add_introspection_rules([], [r"^image\.fields\.ImageCenterField$"])
+    add_introspection_rules([], [r"^image\.video_field\.VideoField$"])
 except ImportError:
     pass

@@ -582,7 +582,7 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     return output_data
 
 
-@lru_cache.lru_cache(maxsize=128)
+@lru_cache(maxsize=128)
 def image_create_token(parameters):
     return "image_token_%s" % hashlib.sha1(parameters.encode("utf8")).hexdigest()
 

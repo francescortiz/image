@@ -1,3 +1,3 @@
-VERSION = (1, 5, 29)
+VERSION = (1, 5, 31)
 
 default_app_config = 'image.apps.ImageConfig'

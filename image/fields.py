@@ -77,7 +77,7 @@ class ImageCenterField(models.Field):
         except AttributeError:
             return str(value)
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection, context=None):
         return ImageCenter(self.image_field, xy=value)
 
     def value_to_string(self, obj):

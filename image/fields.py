@@ -11,10 +11,12 @@ class ImageCenter(object):
     def __init__(self, image_field, x=None, y=None, xy=None):
         self.image_field = image_field
         if (not x is None and y is None) or (x is None and not y is None):
-            raise ValueError(u"If x or y are provided, both have to be provided: x=" + six.text_type(x) + u", y=" + six.text_type(y))
+            raise ValueError(
+                u"If x or y are provided, both have to be provided: x=" + six.text_type(x) + u", y=" + six.text_type(y))
         if not x is None and not y is None:
             if x < 0 or x > 1 or y < 0 or y > 1:
-                raise ValueError(u"Valid values for x and y go from 0 to 1: x=" + six.text_type(x) + u", y=" + six.text_type(y))
+                raise ValueError(
+                    u"Valid values for x and y go from 0 to 1: x=" + six.text_type(x) + u", y=" + six.text_type(y))
             self.x = float(x)
             self.y = float(y)
         else:
@@ -37,7 +39,6 @@ class ImageCenter(object):
 
 
 class ImageCenterField(models.Field):
-
     attr_class = ImageCenter
 
     description = "A field that stores the center of attention for an image."
@@ -46,7 +47,7 @@ class ImageCenterField(models.Field):
 
     def __init__(self, image_field=None, *args, **kwargs):
         if image_field is not None:
-            if not isinstance(image_field, models.ImageField) and  not isinstance(image_field, VideoField):
+            if not isinstance(image_field, models.ImageField) and not isinstance(image_field, VideoField):
                 raise ValueError("image_field value must be an ImageField or VideoField instance")
         kwargs["default"] = ".5,.5"
         self.image_field = image_field
@@ -91,7 +92,7 @@ class ImageCenterField(models.Field):
 def post_init_capture(sender, instance, *args, **kwargs):
     fields = instance.__class__._meta.get_fields()
     for field in fields:
-        if isinstance(field, ImageCenterField):
+        if isinstance(field, ImageCenterField) and field.image_field:
             image_field = instance.__class__._meta.get_field(field.image_field.name)
             image_instance = instance.__getattribute__(image_field.name)
             image_center_instance = instance.__getattribute__(field.name)
@@ -101,10 +102,12 @@ def post_init_capture(sender, instance, *args, **kwargs):
                 setattr(instance, field.name, image_center_instance)
             image_center_instance.image_path = six.text_type(image_instance)
 
+
 post_init.connect(post_init_capture)
 
 try:
     from south.modelsinspector import add_introspection_rules
+
     add_introspection_rules([], [r"^image\.fields\.ImageCenterField$"])
     add_introspection_rules([], [r"^image\.video_field\.VideoField$"])
 except ImportError:

@@ -5,13 +5,26 @@ import os
 import sys
 from os.path import basename, dirname
 
-from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
+from django.conf import settings as django_settings
+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage, staticfiles_storage
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
-from django.core.files.storage import get_storage_class, FileSystemStorage
+from django.core.files.storage import FileSystemStorage, default_storage
+from django.utils.module_loading import import_string
 
 try:
-    from storages.backends.s3boto import S3BotoStorage
+    from django.core.files.storage import storages
+except ImportError:
+    storages = None
+
+try:
+    try:
+        from storages.backends.s3 import S3Storage as S3BotoStorage
+    except ImportError:
+        try:
+            from storages.backends.s3boto3 import S3Boto3Storage as S3BotoStorage
+        except ImportError:
+            from storages.backends.s3boto import S3BotoStorage
 
     BOTO_IS_AVAILABLE = True
 except (ImportError, ImproperlyConfigured):
@@ -23,6 +36,20 @@ from image.settings import IMAGE_CACHE_STORAGE as settings_IMAGE_CACHE_STORAGE, 
 __author__ = 'franki'
 
 STORAGE = None
+
+
+def get_storage_class(import_path=None):
+    if import_path is None:
+        storages_setting = getattr(django_settings, 'STORAGES', None)
+        if storages_setting and 'default' in storages_setting:
+            import_path = storages_setting['default']['BACKEND']
+        else:
+            import_path = getattr(
+                django_settings,
+                'DEFAULT_FILE_STORAGE',
+                'django.core.files.storage.FileSystemStorage',
+            )
+    return import_string(import_path)
 
 if BOTO_IS_AVAILABLE:
     class LocallyMirroredS3BotoStorage(S3BotoStorage):
@@ -85,6 +112,10 @@ def get_storage():
     global STORAGE
     if STORAGE:
         return STORAGE
+    storages_setting = getattr(django_settings, 'STORAGES', None)
+    if storages is not None and storages_setting and 'image_cache' in storages_setting:
+        STORAGE = storages['image_cache']
+        return STORAGE
     if settings_IMAGE_CACHE_STORAGE:
         storage_class = get_storage_class(settings_IMAGE_CACHE_STORAGE)
     else:
@@ -93,6 +124,18 @@ def get_storage():
     return STORAGE
 
 
+def get_media_storage():
+    if hasattr(django_settings, 'DEFAULT_FILE_STORAGE'):
+        return get_storage_class(django_settings.DEFAULT_FILE_STORAGE)()
+    return default_storage
+
+
+def get_static_storage():
+    if hasattr(django_settings, 'STATICFILES_STORAGE'):
+        return get_storage_class(django_settings.STATICFILES_STORAGE)()
+    return staticfiles_storage
+
+
 IMAGE_CACHE_STORAGE = get_storage()
-MEDIA_STORAGE = get_storage_class()()
-STATIC_STORAGE = get_storage_class(STATICFILES_STORAGE)()
+MEDIA_STORAGE = get_media_storage()
+STATIC_STORAGE = get_static_storage()

@@ -40,7 +40,7 @@ def remove_cache(image_path):
 
 
 def prepare_image_cache_cleanup(sender, instance=None, **kwargs):
-    if instance is None:
+    if instance is None or instance.pk is None:
         return
     instance.old_image_fields = {}
 
@@ -62,10 +62,12 @@ def clear_prepared_image_cache_cleanup(sender, instance=None, created=False, **k
         return
     if instance is None:
         return
+    old_image_fields = getattr(instance, 'old_image_fields', {})
     for field in instance._meta.fields:
         if isinstance(field, FileField):
-            if instance.old_image_fields[field.attname] != field.value_to_string(instance):
-                remove_cache(instance.old_image_fields[field.attname])
+            old_value = old_image_fields.get(field.attname)
+            if old_value and old_value != field.value_to_string(instance):
+                remove_cache(old_value)
 
 
 def clear_image_cache(sender, instance, **kwargs):
@@ -87,7 +89,3 @@ if 'reversion' in django_settings.INSTALLED_APPS:
         post_revision_commit.connect(clear_prepared_image_cache_cleanup)
     except ImportError:
         pass
-
-# http://bakery-app01-static.s3.amazonaws.com/image/actuality/file0001116000079.jpg/image_token_73ff82d8ce1577a8a22f5a7d29a772a3ffc6e76c
-
-remove_directory('actuality/file0001116000079.jpg')

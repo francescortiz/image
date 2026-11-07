@@ -464,6 +464,48 @@ class ViewsAndTemplateTagsTests(BaseImageTestCase):
         cached_response = self.client.get(img_url)
         self.assertEqual(cached_response.status_code, 200)
         self.assertEqual(cached_response.content, img_response.content)
+        self.assertEqual(cached_response["Content-type"], "image/jpeg")
+
+    def test_image_view_content_type_by_format_and_cache(self):
+        for fmt_param, expected_mime, expected_pil_format in [
+            ("WEBP", "image/webp", "WEBP"),
+            ("webp", "image/webp", "WEBP"),
+            ("PNG", "image/png", "PNG"),
+            ("JPEG", "image/jpeg", "JPEG"),
+            ("JPG", "image/jpeg", "JPEG"),
+        ]:
+            params = "static=true&width=32&height=24&format=%s" % fmt_param
+            tok = image_create_token(params)
+            req = self.factory.get("/image/")
+            req.user = AnonymousUser()
+            req.session = {tok: params}
+
+            # Initial generation sets Content-type matching format
+            resp1 = image_views.image(req, "test_image/alpha_gradient.png", tok)
+            self.assertEqual(resp1.status_code, 200)
+            self.assertEqual(resp1["Content-type"], expected_mime)
+            img1 = PilImage.open(BytesIO(resp1.content))
+            self.assertEqual(img1.format, expected_pil_format)
+            if expected_pil_format in ("PNG", "WEBP"):
+                self.assertEqual(img1.mode, "RGBA")
+
+            # Subsequent request served from cache (even with empty session) preserves Content-type
+            req_cached = self.factory.get("/image/")
+            req_cached.user = AnonymousUser()
+            req_cached.session = {}
+            resp2 = image_views.image(req_cached, "test_image/alpha_gradient.png", tok)
+            self.assertEqual(resp2.status_code, 200)
+            self.assertEqual(resp2["Content-type"], expected_mime)
+
+        # Mask parameter forces PNG format and image/png Content-type
+        mask_params = "static=true&width=32&height=24&format=JPEG&mask=test_image/alpha_gradient.png"
+        tok_mask = image_create_token(mask_params)
+        req_mask = self.factory.get("/image/")
+        req_mask.user = AnonymousUser()
+        req_mask.session = {tok_mask: mask_params}
+        resp_mask = image_views.image(req_mask, "test_image/red.png", tok_mask)
+        self.assertEqual(resp_mask.status_code, 200)
+        self.assertEqual(resp_mask["Content-type"], "image/png")
 
     def test_crosshair_view(self):
         response = self.client.get(reverse("image.views.crosshair"))

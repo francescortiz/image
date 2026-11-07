@@ -17,7 +17,7 @@ import traceback
 from django.http import HttpResponse, QueryDict
 from django.http.response import Http404
 from django.utils import timezone
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 from image.settings import IMAGE_CACHE_HTTP_EXPIRATION, IMAGE_CACHE_ROOT
 from image.storage import IMAGE_CACHE_STORAGE, MEDIA_STORAGE, STATIC_STORAGE
@@ -31,7 +31,7 @@ def image(request, path, token, autogen=False):
     original_token = token
     token = original_token.split("-:-")[0]
 
-    has_admin_perm = request.user.has_perm('admin') if request else False
+    has_admin_perm = request.user.has_perm('admin') if (request and hasattr(request, 'user')) else False
     is_admin = False
     if ("is_admin=true" in token and request and has_admin_perm) or autogen:
         parameters = token
@@ -126,8 +126,8 @@ def image(request, path, token, autogen=False):
     grayscale = bool(qs.get('grayscale', False))
 
     if "video" in qs:
-        data, http_response = generate_thumb(file_storage, force_text(path))
-        response.status_code = http_response
+        data, http_response = generate_thumb(file_storage, force_str(path))
+        response.status_code = int(http_response)
     else:
         try:
             try:

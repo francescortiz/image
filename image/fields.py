@@ -96,10 +96,11 @@ def post_init_capture(sender, instance, *args, **kwargs):
             image_field = instance.__class__._meta.get_field(field.image_field.name)
             image_instance = instance.__getattribute__(image_field.name)
             image_center_instance = instance.__getattribute__(field.name)
-            image_instance.__image_center_instance__ = image_center_instance
             if isinstance(image_center_instance, six.string_types):
                 image_center_instance = ImageCenter(image_field, xy=image_center_instance)
                 setattr(instance, field.name, image_center_instance)
+            if image_instance is not None:
+                image_instance.__image_center_instance__ = image_center_instance
             image_center_instance.image_path = six.text_type(image_instance)
 
 

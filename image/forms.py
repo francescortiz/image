@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import six
 from django import forms
 from django.forms.utils import flatatt
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 
 try:
@@ -43,7 +43,7 @@ class ImageCenterFormWidget(forms.Widget):
             final_attrs = self.build_attrs(attrs, {"name": name})
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
-            final_attrs['value'] = force_text(self._format_value(value))
+            final_attrs['value'] = force_str(self._format_value(value))
 
         resp = ''
         if getattr(value, 'image_path', None):

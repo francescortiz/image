@@ -3,7 +3,7 @@
 django-videothumbs
 """
 
-from six import StringIO
+from six import BytesIO
 from django.conf.global_settings import FILE_UPLOAD_TEMP_DIR
 import math
 import os
@@ -11,6 +11,8 @@ import time
 from PIL import Image
 
 TMP_DIR = FILE_UPLOAD_TEMP_DIR or '/tmp/'
+_RESAMPLING = getattr(Image, 'Resampling', Image)
+RESAMPLE_LANCZOS = getattr(_RESAMPLING, 'LANCZOS', getattr(Image, 'ANTIALIAS', None))
 
 def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=100):
     histogram = []
@@ -97,15 +99,15 @@ def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=10
             # load is necessary after crop
             image2.load()
             # thumbnail of the cropped image (with ANTIALIAS to make it look better)
-            image2.thumbnail(thumb_size, Image.ANTIALIAS)
+            image2.thumbnail(thumb_size, RESAMPLE_LANCZOS)
         else:
             # not quad
             image2 = image
-            image2.thumbnail(thumb_size, Image.ANTIALIAS)
+            image2.thumbnail(thumb_size, RESAMPLE_LANCZOS)
     else:
         image2 = image
 
-    io = StringIO()
+    io = BytesIO()
 
     # PNG and GIF are the same, JPG is JPEG
     if format.upper() == 'JPG':

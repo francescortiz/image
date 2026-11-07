@@ -37,6 +37,7 @@ class ImageCenterFormWidget(forms.Widget):
 
         if value is None:
             value = ''
+        attrs = attrs or {}
         try:
             final_attrs = self.build_attrs(attrs, name=name)
         except TypeError:

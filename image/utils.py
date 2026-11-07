@@ -278,6 +278,7 @@ def do_overlay(img, overlay_path, overlay_source=None, overlay_tint=None, overla
     if not overlay_path:
         return img
 
+    overlay_source = overlay_source or 'static'
     if overlay_source == 'media':
         with MEDIA_STORAGE.open(overlay_path) as overlay_file:
             overlay = pil.open(overlay_file)
@@ -432,9 +433,11 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
         if ow > iw:
             ow = iw
             oh = int(float(iw) / overlay_ratio)
+            have_to_scale = True
         if oh > ih:
             ow = int(float(ih) * overlay_ratio)
             oh = ih
+            have_to_scale = True
 
         if ow != iw or oh != ih:
             have_to_scale = True
@@ -448,6 +451,7 @@ def do_mask(img, mask_path, mask_source, mask_mode=None):
 
     r, g, b, a = mask.split()
     img.putalpha(a)
+    return img
 
 
 def do_fill(img, fill, width, height):
@@ -483,7 +487,7 @@ def do_padding(img, padding):
         if padding <= 0.0:
             return img
     except ValueError:
-        return
+        return img
 
     iw, ih = img.size
 

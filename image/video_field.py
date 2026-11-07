@@ -31,7 +31,11 @@ class VideoFile(File):
         if not hasattr(self, '_dimensions_cache'):
             close = self.closed
             self.open()
-            self._dimensions_cache = get_video_dimensions(self.path)
+            try:
+                self._dimensions_cache = get_video_dimensions(self.path)
+            finally:
+                if close:
+                    self.close()
         return self._dimensions_cache
 
 

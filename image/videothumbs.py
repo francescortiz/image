@@ -53,6 +53,8 @@ def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=10
         histogram.append(image.histogram())
 
     n = len(histogram)
+    if n == 0:
+        return "", '500'
     avg = []
 
     # Get the image average of the first image
@@ -92,8 +94,8 @@ def generate_thumb(storage, video_path, thumb_size=None, format='jpg', frames=10
             # get minimum size
             minsize = min(xsize, ysize)
             # largest square possible in the image
-            xnewsize = (xsize - minsize) / 2
-            ynewsize = (ysize - minsize) / 2
+            xnewsize = int((xsize - minsize) / 2)
+            ynewsize = int((ysize - minsize) / 2)
             # crop it
             image2 = image.crop((xnewsize, ynewsize, xsize - xnewsize, ysize - ynewsize))
             # load is necessary after crop

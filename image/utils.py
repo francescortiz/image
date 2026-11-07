@@ -16,7 +16,42 @@ from image.settings import IMAGE_DEFAULT_QUALITY, IMAGE_DEFAULT_FORMAT
 from image.storage import MEDIA_STORAGE, STATIC_STORAGE, IMAGE_CACHE_STORAGE
 
 INTERNAL_CACHE_ROOT = "%s/_internal/" % settings.IMAGE_CACHE_ROOT
-ALPHA_FORMATS = ["PNG"]
+ALPHA_FORMATS = ["PNG", "WEBP"]
+
+CONTENT_TYPES = {
+    "JPEG": "image/jpeg",
+    "JPG": "image/jpeg",
+    "PNG": "image/png",
+    "WEBP": "image/webp",
+    "GIF": "image/gif",
+    "BMP": "image/bmp",
+    "TIFF": "image/tiff",
+    "TIF": "image/tiff",
+    "ICO": "image/x-icon",
+    "AVIF": "image/avif",
+}
+
+
+def get_content_type(format=None, data=None):
+    if data:
+        try:
+            with pil.open(BytesIO(data)) as img:
+                if img.format:
+                    fmt = img.format.upper()
+                    if fmt in CONTENT_TYPES:
+                        return CONTENT_TYPES[fmt]
+                    if fmt in pil.MIME:
+                        return pil.MIME[fmt]
+        except Exception:
+            pass
+    if format:
+        fmt = format.upper()
+        if fmt in CONTENT_TYPES:
+            return CONTENT_TYPES[fmt]
+        pil.init()
+        if fmt in pil.MIME:
+            return pil.MIME[fmt]
+    return CONTENT_TYPES.get(IMAGE_DEFAULT_FORMAT.upper(), "image/jpeg")
 
 _RESAMPLING = getattr(pil, 'Resampling', pil)
 RESAMPLE_LANCZOS = getattr(_RESAMPLING, 'LANCZOS', getattr(pil, 'ANTIALIAS', None))
@@ -584,6 +619,9 @@ def render(data, width, height, force=True, padding=None, overlays=(), overlay_s
     img = do_rotate(img, post_rotation)
 
     tmp = BytesIO()
+
+    if format.upper() == "JPG":
+        format = "JPEG"
 
     if not format.upper() in ALPHA_FORMATS:
         img = img.convert("RGB")

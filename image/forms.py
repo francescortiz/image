@@ -53,31 +53,44 @@ class ImageCenterFormWidget(forms.Widget):
                 if isinstance(value.image_field, VideoField):
                     extra_parms += "&video=true"
 
-                extra_parms += "&is_admin=true"
+                extra_parms += "&is_admin=true&autogen=true"
+                from image.misc import get_image_url
+
+                preview_url = get_image_url(
+                    value.image_path,
+                    'format=png&width=150&height=150&mode=scale' + extra_parms,
+                )
 
                 resp = '<div style="display:inline-block; position:relative; border:1px solid black;">'
-                resp += '<img id="image_center-' + str(COUNTER) + '" src="' + reverse(
-                    'image.views.image', args=('format=png&width=150&height=150&mode=scale' + extra_parms, value.image_path)) + '" onclick=""/>'
+                resp += '<img id="image_center-' + str(COUNTER) + '" src="' + preview_url + '" onclick=""/>'
                 resp += '<img id="image_center_crosshair-' + str(COUNTER) + '" src="' + reverse('image.views.crosshair') + '" style="position:absolute; left:0; top:0;" />'
                 resp += '</div>'
                 resp += '<script>'
-                resp += '(function($) {'
-                resp += '    $(window).on("load", function(){'
+                resp += '(function() {'
+                resp += '    window.addEventListener("load", function(){'
                 resp += '        var crosshair = document.getElementById("image_center_crosshair-' + str(COUNTER) + '");'
                 resp += '        var image = document.getElementById("image_center-' + str(COUNTER) + '");'
-                resp += '        var iw = $(image).width();'
-                resp += '        var ih = $(image).height();'
-                resp += '        $(crosshair).css( { left : (iw*' + str(value.x) + ' - 7)+"px", top : (ih*' + str(value.y) + ' - 7)+"px" } );'
-                resp += '        $(image).parent().parent().find("input").hide();'
-                resp += '        $(image).parent().click(function(e){'
-                resp += '            var nx = e.pageX - $(image).offset().left;'
-                resp += '            var ny = e.pageY - $(image).offset().top;'
+                resp += '        if (!crosshair || !image) return;'
+                resp += '        var container = image.parentNode;'
+                resp += '        var wrapper = container.parentNode;'
+                resp += '        var input = wrapper ? wrapper.querySelector("input") : null;'
+                resp += '        var iw = image.clientWidth || image.width;'
+                resp += '        var ih = image.clientHeight || image.height;'
+                resp += '        crosshair.style.left = (iw*' + str(value.x) + ' - 7)+"px";'
+                resp += '        crosshair.style.top = (ih*' + str(value.y) + ' - 7)+"px";'
+                resp += '        if (input) input.style.display = "none";'
+                resp += '        container.addEventListener("click", function(e){'
+                resp += '            var rect = image.getBoundingClientRect();'
+                resp += '            var nx = e.clientX - rect.left;'
+                resp += '            var ny = e.clientY - rect.top;'
+                resp += '            var curW = image.clientWidth || image.width;'
+                resp += '            var curH = image.clientHeight || image.height;'
                 resp += '            crosshair.style.left=(nx - 7)+"px";'
                 resp += '            crosshair.style.top=(ny - 7)+"px";'
-                resp += '            $(image).parent().parent().find("input").val( (nx/iw)+","+(ny/ih) );'
+                resp += '            if (input && curW && curH) input.value = (nx/curW)+","+(ny/curH);'
                 resp += '        });'
-                resp += '});'
-                resp += '})(django.jQuery);'
+                resp += '    });'
+                resp += '})();'
                 resp += '</script>'
                 resp += u'<input%s />' % flatatt(final_attrs)
 

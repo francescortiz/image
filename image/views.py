@@ -22,7 +22,7 @@ from django.utils.encoding import force_str
 from image.settings import IMAGE_CACHE_HTTP_EXPIRATION, IMAGE_CACHE_ROOT
 from image.storage import IMAGE_CACHE_STORAGE, MEDIA_STORAGE, STATIC_STORAGE
 from image.utils import IMAGE_DEFAULT_FORMAT, IMAGE_DEFAULT_QUALITY,\
-    image_create_token, render
+    get_content_type, image_create_token, render
 from image.videothumbs import generate_thumb
 
 
@@ -63,8 +63,10 @@ def image(request, path, token, autogen=False):
             f = IMAGE_CACHE_STORAGE.open(cached_image_file, "rb")
         except IOError:
             raise Http404()
-        response.write(f.read())
+        cached_data = f.read()
         f.close()
+        response['Content-type'] = get_content_type(data=cached_data)
+        response.write(cached_data)
 
         try:
             # Django 2.0 support
@@ -93,6 +95,8 @@ def image(request, path, token, autogen=False):
 
     if mask is not None:
         format = "PNG"
+
+    response['Content-type'] = get_content_type(format=format)
 
     fill = qs.get('fill', None)
     background = qs.get('background', None)

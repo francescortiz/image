@@ -31,7 +31,9 @@ def image(request, path, token, autogen=False):
     original_token = token
     token = original_token.split("-:-")[0]
 
-    has_admin_perm = request.user.has_perm('admin') if (request and hasattr(request, 'user')) else False
+    has_admin_perm = (
+        getattr(request.user, 'is_staff', False) or request.user.has_perm('admin')
+    ) if (request and hasattr(request, 'user')) else False
     is_admin = False
     if ("is_admin=true" in token and request and has_admin_perm) or autogen:
         parameters = token

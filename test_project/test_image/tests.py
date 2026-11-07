@@ -129,10 +129,12 @@ class ImageCenterAndFieldTests(BaseImageTestCase):
 
     def test_image_center_field_validation_and_conversions(self):
         with self.assertRaises(ValueError):
-            ImageCenterField(image_field="not_a_field")
+            ImageCenterField(image_field=12345)
 
-        field = ImageCenterField()
+        field = ImageCenterField(image_field="image")
         self.assertEqual(field.db_type(None), "char(100)")
+        _, _, _, deconstruct_kwargs = field.deconstruct()
+        self.assertEqual(deconstruct_kwargs.get("image_field"), "image")
 
         center = field.to_python("0.2,0.8")
         self.assertIsInstance(center, ImageCenter)
@@ -226,8 +228,8 @@ class ModelFormWidgetAndSignalsTests(BaseImageTestCase):
         form = SampleMediaForm(instance=obj)
         rendered = form.as_p()
         self.assertIn("image_center_crosshair-", rendered)
-        self.assertIn("is_admin=true", rendered)
-        self.assertIn("video=true", rendered)
+        self.assertIn("image_token_", rendered)
+        self.assertNotIn("django.jQuery", rendered)
 
         # Form clean preserves submitted coordinate value
         form_field = ImageCenterFormField()

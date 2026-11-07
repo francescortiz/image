@@ -47,11 +47,26 @@ class ImageCenterField(models.Field):
 
     def __init__(self, image_field=None, *args, **kwargs):
         if image_field is not None:
-            if not isinstance(image_field, models.ImageField) and not isinstance(image_field, VideoField):
-                raise ValueError("image_field value must be an ImageField or VideoField instance")
+            if (
+                not isinstance(image_field, models.ImageField)
+                and not isinstance(image_field, VideoField)
+                and not isinstance(image_field, six.string_types)
+            ):
+                raise ValueError("image_field value must be an ImageField, VideoField instance, or field name")
         kwargs["default"] = ".5,.5"
         self.image_field = image_field
         super(ImageCenterField, self).__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(ImageCenterField, self).deconstruct()
+        field_name = (
+            self.image_field
+            if isinstance(self.image_field, six.string_types)
+            else getattr(self.image_field, "name", None)
+        )
+        if field_name:
+            kwargs["image_field"] = field_name
+        return name, path, args, kwargs
 
     def set_instance(self, instance):
         self.instance = instance
@@ -93,12 +108,21 @@ def post_init_capture(sender, instance, *args, **kwargs):
     fields = instance.__class__._meta.get_fields()
     for field in fields:
         if isinstance(field, ImageCenterField) and field.image_field:
-            image_field = instance.__class__._meta.get_field(field.image_field.name)
+            field_name = (
+                field.image_field
+                if isinstance(field.image_field, six.string_types)
+                else getattr(field.image_field, 'name', None)
+            )
+            if not field_name:
+                continue
+            image_field = instance.__class__._meta.get_field(field_name)
             image_instance = instance.__getattribute__(image_field.name)
             image_center_instance = instance.__getattribute__(field.name)
             if isinstance(image_center_instance, six.string_types):
                 image_center_instance = ImageCenter(image_field, xy=image_center_instance)
                 setattr(instance, field.name, image_center_instance)
+            else:
+                image_center_instance.image_field = image_field
             if image_instance is not None:
                 image_instance.__image_center_instance__ = image_center_instance
             image_center_instance.image_path = six.text_type(image_instance)
